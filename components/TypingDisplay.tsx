@@ -1,206 +1,285 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { InputState } from '@/types/typing';
 import { romajiEngine } from '@/utils/romajiEngine';
 
 interface TypingDisplayProps {
-  japanese: string;
-  accentColor?: string;
-  onProgress?: (state: InputState) => void;
-  onComplete?: () => void;
-  onError?: (position: number) => void;
+    japanese: string;
+    romaji?: string;
+    alternatives?: string[];
+    accentColor?: string;
+    onProgress?: (state: InputState) => void;
+    onComplete?: () => void;
+    onError?: (position: number) => void;
 }
 
 export const TypingDisplay: React.FC<TypingDisplayProps> = ({
-  japanese,
-  accentColor = 'emerald-500',
-  onProgress,
-  onComplete,
-  onError,
+    japanese,
+    romaji,
+    alternatives = [],
+    accentColor = 'emerald',
+    onProgress,
+    onComplete,
+    onError,
 }) => {
-  const [userInput, setUserInput] = useState<string>('');
-  const [japaneseIndex, setJapaneseIndex] = useState<number>(0);
-  const [correctIndices, setCorrectIndices] = useState<Set<number>>(new Set());
-  const [lastError, setLastError] = useState<boolean>(false);
-  const [fadeOutIndices, setFadeOutIndices] = useState<Set<number>>(new Set());
+    const [userInput, setUserInput] = useState<string>('');
+    const [romajiIndex, setRomajiIndex] = useState<number>(0);
+    const [typedPrefix, setTypedPrefix] = useState<string>('');
+    const [japaneseIndex, setJapaneseIndex] = useState<number>(0);
+    const [typedHistory, setTypedHistory] = useState<Array<{ char: string; correct: boolean }>>([]);
+    const [lastError, setLastError] = useState<boolean>(false);
 
-  const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const currentRomajiCharRef = useRef<HTMLSpanElement>(null);
 
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newInput = e.target.value;
-      const previousLength = userInput.length;
-      const newLength = newInput.length;
-
-      if (newLength < previousLength) {
-        setUserInput(newInput);
-        return;
-      }
-
-      if (newLength === previousLength + 1) {
-        const tempInput = newInput;
-        const checkResult = romajiEngine.checkInput(japanese, japaneseIndex, tempInput);
-
-        if (checkResult.isCorrect) {
-          setCorrectIndices(prev => {
-            const newSet = new Set(prev);
-            newSet.add(japaneseIndex);
-            return newSet;
-          });
-
-          const newCurrentIndex = checkResult.nextIndex;
-          setJapaneseIndex(newCurrentIndex);
-          setLastError(false);
-          setUserInput('');
-
-          if (onProgress) {
-            onProgress({
-              currentIndex: newCurrentIndex,
-              correctIndices: Array.from(correctIndices),
-              displayText: japanese.substring(0, newCurrentIndex),
-              nextCharToType: romajiEngine.getNextCharHint(japanese, newCurrentIndex),
-              lastError: false,
-            });
-          }
-
-          if (newCurrentIndex >= japanese.length) {
-            if (onComplete) {
-              onComplete();
-            }
-          }
-        } else {
-          setLastError(true);
-          onError?.(japaneseIndex);
-          setUserInput('');
-        }
-      }
-    },
-    [japanese, japaneseIndex, userInput, correctIndices, onProgress, onComplete, onError]
-  );
-
-  useEffect(() => {
-    if (correctIndices.size > fadeOutIndices.size) {
-      const newFadeIndices = Array.from(correctIndices)
-        .filter(idx => !fadeOutIndices.has(idx))
-        .slice(0, 1);
-
-      if (newFadeIndices.length > 0) {
-        const timer = setTimeout(() => {
-          setFadeOutIndices(prev => {
-            const newSet = new Set(prev);
-            newSet.add(newFadeIndices[0]);
-            return newSet;
-          });
-        }, 300);
-
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [correctIndices, fadeOutIndices]);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const nextCharHint = romajiEngine.getNextCharHint(japanese, japaneseIndex);
-
-  const displayChars = japanese.split('').map((char: string, index: number) => {
-    const isCorrect = correctIndices.has(index);
-    const willFadeOut = fadeOutIndices.has(index);
-    const isCurrent = index === japaneseIndex;
-
-    return {
-      char,
-      index,
-      isCorrect,
-      willFadeOut,
-      isCurrent,
+    const accentColorMap: Record<string, string> = {
+        emerald: '#10b981',
+        blue: '#3b82f6',
+        green: '#22c55e',
+        purple: '#a855f7',
+        red: '#ef4444',
     };
-  });
 
-  return (
-    <div className="w-full max-w-2xl mx-auto px-4 py-8 focus-within:outline-none">
-      <div className="text-center mb-12">
-        <div className="text-4xl md:text-5xl font-light leading-relaxed tracking-wide h-24 flex items-center justify-center">
-          {displayChars.map(({ char, index, isCorrect, willFadeOut, isCurrent }) => (
-            <span
-              key={index}
-              className={`inline-block transition-all duration-300 ${
-                willFadeOut ? 'opacity-0' : 'opacity-100'
-              } ${isCurrent && !isCorrect ? 'font-semibold' : ''} ${
-                isCorrect && !willFadeOut ? 'text-gray-400' : ''
-              }`}
-              style={{
-                marginRight: '0.25em',
-                color: isCurrent && !isCorrect ? accentColor : undefined,
-              }}
-            >
-              {char}
-            </span>
-          ))}
-        </div>
-      </div>
+    const accentColorHex = accentColorMap[accentColor] || '#10b981';
 
-      <div className="text-center mb-8 min-h-12 flex items-center justify-center">
-        <div className="text-2xl font-mono tracking-widest text-gray-700">
-          {nextCharHint.split('').map((char: string, idx: number) => (
-            <span key={idx} className="inline-block mr-1">
-              {char}
-            </span>
-          ))}
-        </div>
-      </div>
+    const sanitizeRomaji = useCallback((value: string) => {
+        return value
+            .normalize('NFKC')
+            .toLowerCase()
+            .replace(/[^a-z0-9\s.,!?'"():;-]/g, '');
+    }, []);
 
-      <div className="text-center mb-8 min-h-8">
+    const romajiCandidates = useMemo(
+        () => {
+            const baseCandidates = Array.from(
+                new Set(
+                    [romaji, ...alternatives, romajiEngine.toRomaji(japanese)]
+                        .map((value) => sanitizeRomaji(value ?? ''))
+                        .filter((value) => value.length > 0),
+                ),
+            );
+
+            return Array.from(
+                new Set(
+                    baseCandidates.flatMap((candidate) => [
+                        candidate,
+                        ...romajiEngine.getImeVariantsFromRomaji(candidate).map((value) => sanitizeRomaji(value)),
+                    ]),
+                ),
+            );
+        },
+        [alternatives, japanese, romaji, sanitizeRomaji],
+    );
+    const [activeRomajiTarget, setActiveRomajiTarget] = useState<string>(romajiCandidates[0] || '');
+    const romajiTarget = activeRomajiTarget || romajiCandidates[0] || '';
+
+    const getJapaneseIndexByRomajiIndex = useCallback(
+        (typedRomajiCount: number, targetLength: number) => {
+            if (japanese.length === 0 || targetLength === 0) return 0;
+            const progress = Math.min(typedRomajiCount / Math.max(targetLength, 1), 1);
+            return Math.floor(progress * japanese.length);
+        },
+        [japanese.length],
+    );
+
+    const handleInputChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const rawChar = e.target.value.slice(-1);
+            const inputChar = sanitizeRomaji(rawChar);
+            setUserInput('');
+
+            if (!inputChar) return;
+
+            const nextPrefix = `${typedPrefix}${inputChar}`;
+            const matchedCandidates = romajiCandidates.filter((candidate) => candidate.startsWith(nextPrefix));
+
+            if (matchedCandidates.length > 0) {
+                const nextTarget = matchedCandidates[0];
+                const nextRomajiIndex = nextPrefix.length;
+                const nextJapaneseIndex = getJapaneseIndexByRomajiIndex(nextRomajiIndex, nextTarget.length);
+                const nextCorrectIndices = Array.from({ length: nextJapaneseIndex }, (_, idx) => idx);
+
+                setActiveRomajiTarget(nextTarget);
+                setTypedPrefix(nextPrefix);
+                setRomajiIndex(nextRomajiIndex);
+                setJapaneseIndex(nextJapaneseIndex);
+                setLastError(false);
+                setTypedHistory((prev) => [...prev, { char: inputChar, correct: true }]);
+
+                onProgress?.({
+                    currentIndex: nextRomajiIndex,
+                    correctIndices: nextCorrectIndices,
+                    displayText: japanese.substring(0, nextJapaneseIndex),
+                    nextCharToType: nextTarget[nextRomajiIndex] || '',
+                    lastError: false,
+                });
+
+                if (matchedCandidates.some((candidate) => candidate.length === nextPrefix.length)) {
+                    onComplete?.();
+                }
+            } else {
+                setTypedHistory((prev) => [...prev, { char: inputChar, correct: false }]);
+                setLastError(true);
+                onError?.(japaneseIndex);
+            }
+        },
+        [
+            japanese,
+            japaneseIndex,
+            onProgress,
+            onComplete,
+            onError,
+            getJapaneseIndexByRomajiIndex,
+            sanitizeRomaji,
+            typedPrefix,
+            romajiCandidates,
+        ],
+    );
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    // クリック時に input に focus
+    const handleContainerClick = () => {
+        inputRef.current?.focus();
+    };
+
+    const completedRomaji = romajiTarget.substring(0, romajiIndex);
+
+    useEffect(() => {
+        currentRomajiCharRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            inline: 'center',
+            block: 'nearest',
+        });
+    }, [romajiIndex]);
+
+    const displayChars = japanese.split('').map((char: string, index: number) => {
+        const isCorrect = index < japaneseIndex;
+        const isCurrent = index === japaneseIndex;
+
+        return {
+            char,
+            index,
+            isCorrect,
+            isCurrent,
+        };
+    });
+
+    return (
         <div
-          className={`text-lg font-mono tracking-wider ${
-            lastError ? 'text-red-500' : 'text-gray-500'
-          }`}
+            className="w-full max-w-3xl mx-auto px-4 py-8 focus-within:outline-none cursor-text"
+            onClick={handleContainerClick}
         >
-          {userInput || '\u00A0'}
-        </div>
-      </div>
+            <div className="text-center mb-12">
+                <div className="w-full text-center text-1xl md:text-2xl border border-gray-200 rounded-xl p-5 md:p-6 bg-gray-50 min-h-28 flex flex-wrap justify-center content-center gap-y-2">
+                    {displayChars.map(({ char, index, isCorrect, isCurrent }) => (
+                        <span
+                            key={index}
+                            className={`inline-block transition-all duration-200 px-1 rounded ${
+                                isCorrect ? 'bg-gray-200 text-gray-900' : 'text-gray-900'
+                            } ${isCurrent && !isCorrect ? 'font-semibold underline underline-offset-8' : ''}`}
+                            style={{
+                                marginRight: '0.2em',
+                                color: isCurrent && !isCorrect ? accentColorHex : undefined,
+                            }}
+                        >
+                            {char}
+                        </span>
+                    ))}
+                </div>
+            </div>
 
-      <div className="text-center mb-6">
-        <div className="text-sm text-gray-500 tabular-nums">
-          {japaneseIndex} / {japanese.length}
-        </div>
-        <div className="mt-2 w-full bg-gray-200 rounded-full h-1 overflow-hidden">
-          <div
-            className="h-full transition-all duration-300"
-            style={{
-              width: `${(japaneseIndex / japanese.length) * 100}%`,
-              backgroundColor: accentColor,
-            }}
-          />
-        </div>
-      </div>
+            <div className="text-center mb-8 min-h-12 flex flex-col items-center justify-center space-y-3">
+                <div className="text-sm text-gray-500 uppercase tracking-[0.25em]">ローマ字全文</div>
+                <div className="w-full text-xl md:text-2xl font-mono tracking-wide text-center leading-relaxed break-words">
+                    {romajiTarget.split('').map((char: string, idx: number) => {
+                        const isCompleted = idx < completedRomaji.length;
+                        const isCurrent = idx === completedRomaji.length;
 
-      <input
-        ref={inputRef}
-        type="text"
-        value={userInput}
-        onChange={handleInputChange}
-        className="absolute -left-full pointer-events-none"
-        autoFocus
-        autoComplete="off"
-        spellCheck="false"
-      />
+                        return (
+                            <span
+                                key={idx}
+                                ref={isCurrent ? currentRomajiCharRef : null}
+                                className={`inline-block mr-1 transition-colors duration-200 ${
+                                    isCompleted ? 'text-gray-900' : 'text-gray-400'
+                                } ${isCurrent ? 'font-semibold underline underline-offset-4' : ''}
+                                }`}
+                                style={{ color: isCurrent ? accentColorHex : undefined }}
+                            >
+                                {char}
+                            </span>
+                        );
+                    })}
+                </div>
+            </div>
 
-      {japaneseIndex >= japanese.length && (
-        <div className="text-center mt-12">
-          <div className="text-2xl font-light" style={{ color: accentColor }}>
-            完了！
-          </div>
-        </div>
-      )}
+            <div className="text-center mb-8 min-h-10">
+                <div className={`text-lg font-mono tracking-wider ${lastError ? 'text-red-500' : 'text-gray-500'}`}>
+                    {typedHistory.length > 0 ? (
+                        typedHistory.slice(-25).map((item, idx: number) => (
+                            <span
+                                key={`${item.char}-${idx}`}
+                                className={`inline-block mr-1 px-2 py-1 rounded border ${
+                                    item.correct
+                                        ? 'bg-gray-100 text-gray-700 border-gray-300'
+                                        : 'bg-red-50 text-red-600 border-red-200'
+                                }`}
+                            >
+                                {item.char}
+                            </span>
+                        ))
+                    ) : userInput ? (
+                        userInput.split('').map((char: string, idx: number) => (
+                            <span key={idx} className="inline-block mr-1 px-1 py-0.5 rounded bg-gray-100 text-black">
+                                {char}
+                            </span>
+                        ))
+                    ) : (
+                        <span className="inline-block opacity-0">_</span>
+                    )}
+                </div>
+            </div>
 
-      {lastError && (
-        <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded animate-pulse">
-          誤字。もう一度入力してください。
+            <div className="text-center mb-6">
+                <div className="text-sm text-gray-500 tabular-nums">
+                    {romajiIndex} / {romajiTarget.length}
+                </div>
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-1 overflow-hidden">
+                    <div
+                        className="h-full transition-all duration-300"
+                        style={{
+                            width: `${(romajiIndex / Math.max(romajiTarget.length, 1)) * 100}%`,
+                            backgroundColor: '#374151',
+                        }}
+                    />
+                </div>
+            </div>
+
+            <input
+                ref={inputRef}
+                type="text"
+                value={userInput}
+                onChange={handleInputChange}
+                className="fixed -left-[9999px] top-0 h-px w-px opacity-0 pointer-events-none"
+                autoFocus
+                autoComplete="off"
+                spellCheck="false"
+            />
+
+            {romajiIndex >= romajiTarget.length && (
+                <div className="text-center mt-12">
+                    <div className="text-2xl font-light text-gray-800">完了！</div>
+                </div>
+            )}
+
+            {lastError && (
+                <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded animate-pulse">
+                    誤字。もう一度入力してください。
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };

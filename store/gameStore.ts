@@ -10,10 +10,17 @@ interface Question {
 }
 
 interface GameStore {
+  // UI状態
+  currentScreen: 'home' | 'single' | 'multi';
+  setScreen: (screen: 'home' | 'single' | 'multi') => void;
+
   // ゲーム状態
   isPlaying: boolean;
   isPaused: boolean;
   difficulty: Difficulty;
+  setDifficulty: (difficulty: Difficulty) => void;
+  gameDurationMinutes: number;
+  setGameDurationMinutes: (minutes: number) => void;
   currentSession: SinglePlaySession | null;
 
   // アクション
@@ -30,11 +37,28 @@ interface GameStore {
 
 export const useGameStore = create<GameStore>(set => ({
   // 初期状態
+  currentScreen: 'home',
   isPlaying: false,
   isPaused: false,
   difficulty: 'easy',
+  gameDurationMinutes: 1,
+  setDifficulty: (difficulty) =>
+    set(() => ({
+      difficulty,
+    })),
+  setGameDurationMinutes: (minutes) =>
+    set(() => ({
+      gameDurationMinutes: Math.min(5, Math.max(1, minutes)),
+    })),
+
   currentSession: null,
   gameHistory: [],
+
+  // スクリーン切り替え
+  setScreen: (screen) =>
+    set(() => ({
+      currentScreen: screen,
+    })),
 
   // ゲーム開始
   startGame: (difficulty, question) =>

@@ -1,9 +1,5 @@
-import { SinglePlayScreen } from '@/components/SinglePlayScreen';
+import { ClientPage } from './client-page';
 
 export default function Home() {
-  return (
-    <main className="min-h-screen bg-white">
-      <SinglePlayScreen />
-    </main>
-  );
+    return <ClientPage />;
 }
