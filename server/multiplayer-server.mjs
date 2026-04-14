@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Server } from 'socket.io';
 
-const PORT = Number(process.env.MULTIPLAYER_PORT ?? 4001);
+const PORT = Number(process.env.PORT ?? process.env.MULTIPLAYER_PORT ?? 4001);
 const CLIENT_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'http://localhost:3000';
 
 const dataPath = path.join(process.cwd(), 'data', 'questions.json');

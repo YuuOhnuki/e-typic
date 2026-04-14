@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: dojo-multiplayer-socket
+    runtime: node
+    plan: free
+    autoDeploy: true
+    buildCommand: npm ci
+    startCommand: npm run socket
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NEXT_PUBLIC_APP_ORIGIN
+        sync: false
