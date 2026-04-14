@@ -1,0 +1,136 @@
+{
+  "questions": {
+    "easy": [
+      {
+        "id": "easy-001",
+        "difficulty": "easy",
+        "japanese": "りんご",
+        "romaji": "ringo",
+        "alternatives": ["ringo"]
+      },
+      {
+        "id": "easy-002",
+        "difficulty": "easy",
+        "japanese": "みず",
+        "romaji": "mizu",
+        "alternatives": ["mizu"]
+      },
+      {
+        "id": "easy-003",
+        "difficulty": "easy",
+        "japanese": "さくら",
+        "romaji": "sakura",
+        "alternatives": ["sakura"]
+      },
+      {
+        "id": "easy-004",
+        "difficulty": "easy",
+        "japanese": "こんにちは",
+        "romaji": "konnichiha",
+        "alternatives": ["konnichiha", "konnichiwa"]
+      },
+      {
+        "id": "easy-005",
+        "difficulty": "easy",
+        "japanese": "ありがとう",
+        "romaji": "arigatou",
+        "alternatives": ["arigatou", "arigatô"]
+      },
+      {
+        "id": "easy-006",
+        "difficulty": "easy",
+        "japanese": "さようなら",
+        "romaji": "sayounara",
+        "alternatives": ["sayounara"]
+      },
+      {
+        "id": "easy-007",
+        "difficulty": "easy",
+        "japanese": "おはよう",
+        "romaji": "ohayou",
+        "alternatives": ["ohayou", "ohayô"]
+      },
+      {
+        "id": "easy-008",
+        "difficulty": "easy",
+        "japanese": "すし",
+        "romaji": "sushi",
+        "alternatives": ["sushi"]
+      },
+      {
+        "id": "easy-009",
+        "difficulty": "easy",
+        "japanese": "てんき",
+        "romaji": "tenki",
+        "alternatives": ["tenki"]
+      },
+      {
+        "id": "easy-010",
+        "difficulty": "easy",
+        "japanese": "ねこ",
+        "romaji": "neko",
+        "alternatives": ["neko"]
+      }
+    ],
+    "medium": [
+      {
+        "id": "medium-001",
+        "difficulty": "medium",
+        "japanese": "きょうはいいてんきですね。",
+        "romaji": "kyouhaiitenkindesune.",
+        "alternatives": []
+      },
+      {
+        "id": "medium-002",
+        "difficulty": "medium",
+        "japanese": "まんねんひつでかき をします。",
+        "romaji": "mannenひつdekaki wosimasu.",
+        "alternatives": []
+      },
+      {
+        "id": "medium-003",
+        "difficulty": "medium",
+        "japanese": "パソコンでしゅくだいをたっします。",
+        "romaji": "pasokondesukudaiotassimasu.",
+        "alternatives": []
+      },
+      {
+        "id": "medium-004",
+        "difficulty": "medium",
+        "japanese": "にほんごはむずかしいですがたのしいです。",
+        "romaji": "nipongohamuzkasiidesugatanosiidesу.",
+        "alternatives": []
+      },
+      {
+        "id": "medium-005",
+        "difficulty": "medium",
+        "japanese": "さんぽにいくまえに、くつをはきます。",
+        "romaji": "sanponiikumaenni,kutuwoハkimasu.",
+        "alternatives": []
+      }
+    ],
+    "hard": [
+      {
+        "id": "hard-001",
+        "difficulty": "hard",
+        "japanese": "デジタル化が進む現在、情報技術はあらゆる産業で重要な役割を担っています。",
+        "romaji": "dejitarukagasusumugenzai,jouhouguzyutsuhaanarayurusangyoudemzyuuyounayakuwariotunatteitasu.",
+        "alternatives": []
+      },
+      {
+        "id": "hard-002",
+        "difficulty": "hard",
+        "japanese": "自然言語処理とは、人間が日常的に使用する言語を計算機に処理させる技術のことです。",
+        "romaji": "sizenngenngoosyorikutoha,ningennnganitizyoute'kini sizyouserugenngowokeisakukikinosyorikusasetugigzyutunokotodesu.",
+        "alternatives": []
+      },
+      {
+        "id": "hard-003",
+        "difficulty": "hard",
+        "japanese": "プログラミング言語の選択は、開発効率とシステムのパフォーマンスに大きな影響を与えます。",
+        "romaji": "puroguraminngugengonnosenntagwaha,kaihatukouurituotosisutemanonpahoremannsunikookinnaikyoueiwoataemasы.",
+        "alternatives": []
+      }
+    ]
+  }
+}
