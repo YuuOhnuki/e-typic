@@ -33,13 +33,23 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
             {/* ボタングループ */}
             <div className="space-y-4 w-full max-w-sm">
                 {!showDifficultySelect ? (
-                    <Button
-                        onClick={() => setShowDifficultySelect(true)}
-                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl"
-                        size="lg"
-                    >
-                        シングルプレイ
-                    </Button>
+                    <div className="space-y-3">
+                        <Button
+                            onClick={() => setShowDifficultySelect(true)}
+                            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl"
+                            size="lg"
+                        >
+                            シングルプレイ
+                        </Button>
+                        <Button
+                            onClick={onSelectMultiPlay}
+                            variant="outline"
+                            className="w-full border-gray-300 text-gray-800 hover:bg-gray-100 rounded-xl"
+                            size="lg"
+                        >
+                            マルチプレイ
+                        </Button>
+                    </div>
                 ) : (
                     <div className="space-y-3">
                         <div className="text-center text-sm tracking-wide text-gray-500">難易度を選択</div>
