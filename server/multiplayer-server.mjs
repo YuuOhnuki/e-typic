@@ -44,7 +44,29 @@ const questionsData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 /** @type {Map<string, Room>} */
 const rooms = new Map();
 
+/**
+ * health など HTTP エンドポイント用の CORS ヘッダーを付与する。
+ * @param {http.IncomingMessage} req
+ * @param {http.ServerResponse} res
+ */
+function applyHttpCorsHeaders(req, res) {
+    const requestOrigin = req.headers.origin;
+    const allowOrigin = requestOrigin === CLIENT_ORIGIN ? requestOrigin : CLIENT_ORIGIN;
+    res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
+    res.setHeader('Vary', 'Origin');
+}
+
 const server = http.createServer((req, res) => {
+    applyHttpCorsHeaders(req, res);
+
+    if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+    }
+
     if (req.url === '/health') {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ ok: true, service: 'dojo-multiplayer-socket' }));
@@ -158,7 +180,8 @@ function resetPlayerStatus(player) {
 }
 
 function toPublicPlayer(player) {
-    const correctRate = player.totalInputCount > 0 ? (player.correctCount / player.totalInputCount) * 100 : 0;
+    const totalAttemptCount = player.totalInputCount + player.errorCount;
+    const correctRate = totalAttemptCount > 0 ? (player.correctCount / totalAttemptCount) * 100 : 0;
     return {
         playerId: player.playerId,
         name: player.name,

@@ -1,15 +1,13 @@
 {
   "name": "dojo",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "socket": "node server/multiplayer-server.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "version:patch": "npm version patch",
-    "push:with-version": "npm version patch && git push && git push --tags"
+    "lint": "eslint"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

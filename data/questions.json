@@ -8,8 +8,20 @@
                 "romaji": "ringo",
                 "alternatives": ["rinngo", "rixngo"]
             },
-            { "id": "easy-002", "difficulty": "easy", "japanese": "水", "romaji": "mizu", "alternatives": ["midu"] },
-            { "id": "easy-003", "difficulty": "easy", "japanese": "桜", "romaji": "sakura", "alternatives": [] },
+            {
+                "id": "easy-002",
+                "difficulty": "easy",
+                "japanese": "水",
+                "romaji": "mizu",
+                "alternatives": ["midu"]
+            },
+            {
+                "id": "easy-003",
+                "difficulty": "easy",
+                "japanese": "桜",
+                "romaji": "sakura",
+                "alternatives": []
+            },
             {
                 "id": "easy-004",
                 "difficulty": "easy",
@@ -31,8 +43,20 @@
                 "romaji": "sayounara",
                 "alternatives": []
             },
-            { "id": "easy-007", "difficulty": "easy", "japanese": "おはよう", "romaji": "ohayou", "alternatives": [] },
-            { "id": "easy-008", "difficulty": "easy", "japanese": "寿司", "romaji": "sushi", "alternatives": ["susi"] },
+            {
+                "id": "easy-007",
+                "difficulty": "easy",
+                "japanese": "おはよう",
+                "romaji": "ohayou",
+                "alternatives": []
+            },
+            {
+                "id": "easy-008",
+                "difficulty": "easy",
+                "japanese": "寿司",
+                "romaji": "sushi",
+                "alternatives": ["susi"]
+            },
             {
                 "id": "easy-009",
                 "difficulty": "easy",
@@ -40,16 +64,34 @@
                 "romaji": "tenki",
                 "alternatives": ["tennki", "texnki"]
             },
-            { "id": "easy-010", "difficulty": "easy", "japanese": "猫", "romaji": "neko", "alternatives": [] },
-            { "id": "easy-011", "difficulty": "easy", "japanese": "机", "romaji": "tsukue", "alternatives": ["tukue"] },
+            {
+                "id": "easy-010",
+                "difficulty": "easy",
+                "japanese": "猫",
+                "romaji": "neko",
+                "alternatives": []
+            },
+            {
+                "id": "easy-011",
+                "difficulty": "easy",
+                "japanese": "机",
+                "romaji": "tsukue",
+                "alternatives": ["tukue"]
+            },
             {
                 "id": "easy-012",
                 "difficulty": "easy",
                 "japanese": "富士山",
                 "romaji": "fujisan",
-                "alternatives": ["hujisan", "fuzisan", "huzisan", "fujisann"]
+                "alternatives": ["hujisan", "fuzisan", "huzisan", "fujisann", "hujisann"]
             },
-            { "id": "easy-013", "difficulty": "easy", "japanese": "お茶", "romaji": "ocha", "alternatives": ["otya"] },
+            {
+                "id": "easy-013",
+                "difficulty": "easy",
+                "japanese": "お茶",
+                "romaji": "ocha",
+                "alternatives": ["otya"]
+            },
             {
                 "id": "easy-014",
                 "difficulty": "easy",
@@ -64,7 +106,13 @@
                 "romaji": "densha",
                 "alternatives": ["densya", "dennsha", "dennsya"]
             },
-            { "id": "easy-016", "difficulty": "easy", "japanese": "海", "romaji": "umi", "alternatives": [] },
+            {
+                "id": "easy-016",
+                "difficulty": "easy",
+                "japanese": "海",
+                "romaji": "umi",
+                "alternatives": []
+            },
             {
                 "id": "easy-017",
                 "difficulty": "easy",
@@ -72,8 +120,20 @@
                 "romaji": "hon",
                 "alternatives": ["honn", "hoxn"]
             },
-            { "id": "easy-018", "difficulty": "easy", "japanese": "世界", "romaji": "sekai", "alternatives": [] },
-            { "id": "easy-019", "difficulty": "easy", "japanese": "雪", "romaji": "yuki", "alternatives": [] },
+            {
+                "id": "easy-018",
+                "difficulty": "easy",
+                "japanese": "世界",
+                "romaji": "sekai",
+                "alternatives": []
+            },
+            {
+                "id": "easy-019",
+                "difficulty": "easy",
+                "japanese": "雪",
+                "romaji": "yuki",
+                "alternatives": []
+            },
             {
                 "id": "easy-020",
                 "difficulty": "easy",
@@ -81,7 +141,13 @@
                 "romaji": "jitensha",
                 "alternatives": ["zitensya", "jitennsya", "zitennsya"]
             },
-            { "id": "easy-021", "difficulty": "easy", "japanese": "時計", "romaji": "tokei", "alternatives": [] },
+            {
+                "id": "easy-021",
+                "difficulty": "easy",
+                "japanese": "時計",
+                "romaji": "tokei",
+                "alternatives": []
+            },
             {
                 "id": "easy-022",
                 "difficulty": "easy",
@@ -89,7 +155,13 @@
                 "romaji": "denwa",
                 "alternatives": ["dennwa"]
             },
-            { "id": "easy-023", "difficulty": "easy", "japanese": "森", "romaji": "mori", "alternatives": [] },
+            {
+                "id": "easy-023",
+                "difficulty": "easy",
+                "japanese": "森",
+                "romaji": "mori",
+                "alternatives": []
+            },
             {
                 "id": "easy-024",
                 "difficulty": "easy",
@@ -97,14 +169,62 @@
                 "romaji": "ongaku",
                 "alternatives": ["onngaku"]
             },
-            { "id": "easy-025", "difficulty": "easy", "japanese": "星", "romaji": "hoshi", "alternatives": ["hosi"] },
-            { "id": "easy-026", "difficulty": "easy", "japanese": "鳥", "romaji": "tori", "alternatives": [] },
-            { "id": "easy-027", "difficulty": "easy", "japanese": "夏", "romaji": "natsu", "alternatives": ["natu"] },
-            { "id": "easy-028", "difficulty": "easy", "japanese": "冬", "romaji": "fuyu", "alternatives": ["huyu"] },
-            { "id": "easy-029", "difficulty": "easy", "japanese": "手紙", "romaji": "tegami", "alternatives": [] },
-            { "id": "easy-030", "difficulty": "easy", "japanese": "犬", "romaji": "inu", "alternatives": [] },
-            { "id": "easy-031", "difficulty": "easy", "japanese": "花", "romaji": "hana", "alternatives": [] },
-            { "id": "easy-032", "difficulty": "easy", "japanese": "月", "romaji": "tsuki", "alternatives": ["tuki"] },
+            {
+                "id": "easy-025",
+                "difficulty": "easy",
+                "japanese": "星",
+                "romaji": "hoshi",
+                "alternatives": ["hosi"]
+            },
+            {
+                "id": "easy-026",
+                "difficulty": "easy",
+                "japanese": "鳥",
+                "romaji": "tori",
+                "alternatives": []
+            },
+            {
+                "id": "easy-027",
+                "difficulty": "easy",
+                "japanese": "夏",
+                "romaji": "natsu",
+                "alternatives": ["natu"]
+            },
+            {
+                "id": "easy-028",
+                "difficulty": "easy",
+                "japanese": "冬",
+                "romaji": "fuyu",
+                "alternatives": ["huyu"]
+            },
+            {
+                "id": "easy-029",
+                "difficulty": "easy",
+                "japanese": "手紙",
+                "romaji": "tegami",
+                "alternatives": []
+            },
+            {
+                "id": "easy-030",
+                "difficulty": "easy",
+                "japanese": "犬",
+                "romaji": "inu",
+                "alternatives": []
+            },
+            {
+                "id": "easy-031",
+                "difficulty": "easy",
+                "japanese": "花",
+                "romaji": "hana",
+                "alternatives": []
+            },
+            {
+                "id": "easy-032",
+                "difficulty": "easy",
+                "japanese": "月",
+                "romaji": "tsuki",
+                "alternatives": ["tuki"]
+            },
             {
                 "id": "easy-033",
                 "difficulty": "easy",
@@ -112,8 +232,20 @@
                 "romaji": "gakkou",
                 "alternatives": ["gakko-"]
             },
-            { "id": "easy-034", "difficulty": "easy", "japanese": "野菜", "romaji": "yasai", "alternatives": [] },
-            { "id": "easy-035", "difficulty": "easy", "japanese": "地図", "romaji": "chizu", "alternatives": ["tizu"] },
+            {
+                "id": "easy-034",
+                "difficulty": "easy",
+                "japanese": "野菜",
+                "romaji": "yasai",
+                "alternatives": []
+            },
+            {
+                "id": "easy-035",
+                "difficulty": "easy",
+                "japanese": "地図",
+                "romaji": "chizu",
+                "alternatives": ["tizu"]
+            },
             {
                 "id": "easy-036",
                 "difficulty": "easy",
@@ -128,7 +260,13 @@
                 "romaji": "kaban",
                 "alternatives": ["kabann"]
             },
-            { "id": "easy-038", "difficulty": "easy", "japanese": "たいよう", "romaji": "taiyou", "alternatives": [] },
+            {
+                "id": "easy-038",
+                "difficulty": "easy",
+                "japanese": "たいよう",
+                "romaji": "taiyou",
+                "alternatives": []
+            },
             {
                 "id": "easy-039",
                 "difficulty": "easy",
@@ -136,7 +274,13 @@
                 "romaji": "himawari",
                 "alternatives": []
             },
-            { "id": "easy-040", "difficulty": "easy", "japanese": "かえる", "romaji": "kaeru", "alternatives": [] },
+            {
+                "id": "easy-040",
+                "difficulty": "easy",
+                "japanese": "かえる",
+                "romaji": "kaeru",
+                "alternatives": []
+            },
             {
                 "id": "easy-041",
                 "difficulty": "easy",
@@ -179,7 +323,13 @@
                 "romaji": "ichigo",
                 "alternatives": ["itigo"]
             },
-            { "id": "easy-047", "difficulty": "easy", "japanese": "うさぎ", "romaji": "usagi", "alternatives": [] },
+            {
+                "id": "easy-047",
+                "difficulty": "easy",
+                "japanese": "うさぎ",
+                "romaji": "usagi",
+                "alternatives": []
+            },
             {
                 "id": "easy-048",
                 "difficulty": "easy",
@@ -194,7 +344,13 @@
                 "romaji": "omatsuri",
                 "alternatives": ["omaturi"]
             },
-            { "id": "easy-050", "difficulty": "easy", "japanese": "すいか", "romaji": "suika", "alternatives": [] }
+            {
+                "id": "easy-050",
+                "difficulty": "easy",
+                "japanese": "すいか",
+                "romaji": "suika",
+                "alternatives": []
+            }
         ],
         "medium": [
             {
@@ -202,7 +358,7 @@
                 "difficulty": "medium",
                 "japanese": "今日はいい天気ですね",
                 "romaji": "kyouhaiitenkidesune",
-                "alternatives": ["kyouhaiitennkidesune"]
+                "alternatives": ["kyouhaiitennkidesune", "kyouhaiitenkidesune"]
             },
             {
                 "id": "medium-002",
@@ -257,8 +413,8 @@
                 "id": "medium-009",
                 "difficulty": "medium",
                 "japanese": "駅まで一緒に歩きましょう",
-                "romaji": "ekimadeisshoniarukishou",
-                "alternatives": ["ekimadeissyoniarukisyou"]
+                "romaji": "ekimadeisshoniarukimashou",
+                "alternatives": ["ekimadeissyoniarukimasyou", "ekimadeisshoniarukimasyou"]
             },
             {
                 "id": "medium-010",
@@ -279,7 +435,7 @@
                 "difficulty": "medium",
                 "japanese": "窓を開けて空気を入れ替える",
                 "romaji": "madowoaketekuukiwoirekaeru",
-                "alternatives": []
+                "alternatives": ["madowoaketekuukiwoirekaeru"]
             },
             {
                 "id": "medium-013",
@@ -335,7 +491,7 @@
                 "difficulty": "medium",
                 "japanese": "スマホの充電が切れそうです",
                 "romaji": "sumahonojuudengakiresoudesu",
-                "alternatives": ["sumahonozuudenngakiresoudesu"]
+                "alternatives": ["sumahonojyuudenngakiresoudesu", "sumahonozuudenngakiresoudesu"]
             },
             {
                 "id": "medium-021",
@@ -349,14 +505,14 @@
                 "difficulty": "medium",
                 "japanese": "昨日の夜はぐっすり眠れました",
                 "romaji": "kinounoyoruhagussurinemuremashita",
-                "alternatives": ["kinounoyoruha gussurinemuremasita"]
+                "alternatives": ["kinounoyoruhagussurinemuremasita"]
             },
             {
                 "id": "medium-023",
                 "difficulty": "medium",
                 "japanese": "趣味は読書と写真撮影です",
                 "romaji": "shumihadokusyotoshashinsatsuieidesu",
-                "alternatives": ["sumihadokusyotosasyinsatsuieidesu"]
+                "alternatives": ["syumihadokusyotosasyinsatsuieidesu"]
             },
             {
                 "id": "medium-024",
@@ -412,7 +568,7 @@
                 "difficulty": "medium",
                 "japanese": "窓の外を眺める",
                 "romaji": "madosotowonagameru",
-                "alternatives": []
+                "alternatives": ["madosotowonagameru"]
             },
             {
                 "id": "medium-032",
@@ -484,49 +640,55 @@
                 "difficulty": "hard",
                 "japanese": "デジタル技術が社会を大きく変える",
                 "romaji": "dejitarugijutsugashakaiwoookikukaeru",
-                "alternatives": ["dezitarugizyutugasyakaiwoookikukaeru"]
+                "alternatives": ["dezitarugizyutugasyakaiwoookikukaeru", "dejitarugijutugashakaiwoookikukaeru"]
             },
             {
                 "id": "hard-002",
                 "difficulty": "hard",
                 "japanese": "人間とコンピュータが対話する技術",
                 "romaji": "ningentokonpyu-tagataiwasurugijutsu",
-                "alternatives": ["ninngentokonnpyu-tagataiwasurugizyutu"]
+                "alternatives": ["ninngentokonnpyu-tagataiwasurugizyutu", "ninngentokonnpyu-tagataiwasurugijutsu"]
             },
             {
                 "id": "hard-003",
                 "difficulty": "hard",
                 "japanese": "プログラミングで新しい価値を創る",
                 "romaji": "puroguramingudeatarashiikachiwotsukuru",
-                "alternatives": ["puroguraminngudeatarasiikatiwotukuru"]
+                "alternatives": ["puroguraminngudeatarasiikatiwotukuru", "puroguraminngudeatarashiikachiwotukuru"]
             },
             {
                 "id": "hard-004",
                 "difficulty": "hard",
                 "japanese": "持続可能な開発目標を達成しましょう",
                 "romaji": "jizokukanounakaihatsumokuhyouwotasseishimashou",
-                "alternatives": ["zizokukanounakaihatumokuhyouwotasseisimasyou"]
+                "alternatives": [
+                    "zizokukanounakaihatumokuhyouwotasseisimasyou",
+                    "jizokukanounakaihatsumokuhyouwotasseisimasyou"
+                ]
             },
             {
                 "id": "hard-005",
                 "difficulty": "hard",
                 "japanese": "最新のニュースをネットで確認する",
                 "romaji": "saishinnonyu-suwonettodekakuninsuru",
-                "alternatives": ["saisinnonyu-suwonettodekakuninnsuru"]
+                "alternatives": ["saisinnonyu-suwonettodekakuninnsuru", "saishinnonyu-suwonettodekakuninnsuru"]
             },
             {
                 "id": "hard-006",
                 "difficulty": "hard",
                 "japanese": "集中力を高めて作業効率を上げる",
                 "romaji": "shuuchuuryokuwotakametesagyoukouritsuwoageru",
-                "alternatives": ["syuutyuuryokuwotakametesagyoukourituwoageru"]
+                "alternatives": [
+                    "syuutyuuryokuwotakametesagyoukourituwoageru",
+                    "shuuchuuryokuwotakametesagyoukourituwoageru"
+                ]
             },
             {
                 "id": "hard-007",
                 "difficulty": "hard",
                 "japanese": "毎日の積み重ねが大きな成果を生む",
                 "romaji": "mainichinotsumikasanegaookinaseikawoumu",
-                "alternatives": ["mainitinotumikasanegaookinaseikawoumu"]
+                "alternatives": ["mainitinotumikasanegaookinaseikawoumu", "mainichinotsumikasanegaookinaseikawoumu"]
             },
             {
                 "id": "hard-008",
@@ -540,14 +702,17 @@
                 "difficulty": "hard",
                 "japanese": "多様な視点から物事を考える",
                 "romaji": "tayonashitenkaramonogotowokangaeru",
-                "alternatives": ["tayounasitenkaramonogotowokangaeru"]
+                "alternatives": ["tayounasitenkaramonogotowokangaeru", "tayounashitenkaramonogotowokangaeru"]
             },
             {
                 "id": "hard-010",
                 "difficulty": "hard",
                 "japanese": "自分の可能性を信じて挑戦し続ける",
                 "romaji": "jibunnokanouseiwoshinjitechousenshitsuzukeru",
-                "alternatives": ["zibunnnokanouseiwosinzitetyousennsitudukeru"]
+                "alternatives": [
+                    "zibunnnokanouseiwosinzitetyousennsitudukeru",
+                    "jibunnnokanouseiwoshinjitechousenshitudukeru"
+                ]
             },
             {
                 "id": "hard-011",
@@ -561,21 +726,24 @@
                 "difficulty": "hard",
                 "japanese": "健康管理のために規則正しい生活を送る",
                 "romaji": "kenkoukanrinotamenikisokutadashiiseikatsuwookuru",
-                "alternatives": ["kennkoukannrinotamenikisokutadasiiseikatuwookuru"]
+                "alternatives": [
+                    "kennkoukannrinotamenikisokutadasiiseikatuwookuru",
+                    "kenkoukanrinotamenikisokutadashiiseikatuwookuru"
+                ]
             },
             {
                 "id": "hard-013",
                 "difficulty": "hard",
                 "japanese": "将来の夢に向かって一歩ずつ進む",
                 "romaji": "shourainoyumenimukatteippozutsususumu",
-                "alternatives": ["syourainoyumenimukatteippodutsususumu"]
+                "alternatives": ["syourainoyumenimukatteippodutsususumu", "shourainoyumenimukatteippozutusususumu"]
             },
             {
                 "id": "hard-014",
                 "difficulty": "hard",
                 "japanese": "異文化交流を通じて視野を広げる",
                 "romaji": "ibunkakouryuuwotsuujiteshiyawohirogeru",
-                "alternatives": ["ibunnkakouryuuwotuuzitesiyawohirogeru"]
+                "alternatives": ["ibunnkakouryuuwotuuzitesiyawohirogeru", "ibunnkakouryuuwotsuujiteshiyawohirogeru"]
             },
             {
                 "id": "hard-015",
@@ -589,14 +757,14 @@
                 "difficulty": "hard",
                 "japanese": "論理的な思考プロセスを重視する",
                 "romaji": "ronritekinashikoupurosesuwojuushisuru",
-                "alternatives": ["ronritekinasikoupurosesuwozyuusisuru"]
+                "alternatives": ["ronritekinasikoupurosesuwozyuusisuru", "ronritekinashikoupurosesuwozyuusisuru"]
             },
             {
                 "id": "hard-017",
                 "difficulty": "hard",
                 "japanese": "温室効果ガスの排出を抑制する",
                 "romaji": "onshitsukoukgasunohaishutsuwoyokuseisuru",
-                "alternatives": ["onsitukoukgasunohaisutuwoyokuseisuru"]
+                "alternatives": ["onsitukoukgasunohaisutuwoyokuseisuru", "onshitsukoukgasunohaisutsuwoyokuseisuru"]
             },
             {
                 "id": "hard-018",
@@ -723,6 +891,282 @@
                 "japanese": "問題の本質を見極めて適切な処置を行う",
                 "romaji": "mondainohonshitsuwomikiwametetekisetsunashochiwookonau",
                 "alternatives": ["monndainohonsituwomikiwametetekisetsunasyotiwookonau"]
+            },
+            {
+                "id": "hard-036",
+                "difficulty": "hard",
+                "japanese": "客観的なデータに基づいて現状を分析する",
+                "romaji": "kyakkantekunade-tanimotozuitegenjouwoabunsekisuru",
+                "alternatives": [
+                    "kyakkantekunade-tanimotozuitegenzyouwoabunsekisuru",
+                    "kyakkantekunade-tanimotozuitegenjouwoabunsekisuru"
+                ]
+            },
+            {
+                "id": "hard-037",
+                "difficulty": "hard",
+                "japanese": "優先順位を整理してタスクを遂行する",
+                "romaji": "yuusenjunniwoseirishitetasukuwosuikousuru",
+                "alternatives": ["yuusenzunniwoseirisitetasukuwosuikousuru", "yuusenjunniwoseirisitetasukuwosuikousuru"]
+            },
+            {
+                "id": "hard-038",
+                "difficulty": "hard",
+                "japanese": "創造的なアイデアが新しい市場を切り拓く",
+                "romaji": "souzoutekinaaideagatarashiishijouwokirihiraku",
+                "alternatives": [
+                    "souzoutekinaaideagatarasiisizouwokirihiraku",
+                    "souzoutekinaaideagatarashiisizouwokirihiraku"
+                ]
+            },
+            {
+                "id": "hard-039",
+                "difficulty": "hard",
+                "japanese": "継続的な学習が自己成長の鍵となる",
+                "romaji": "keizokutekunagakushuugajikoseichounokagitonaru",
+                "alternatives": [
+                    "keizokutekunagakusyuugazikoseityounokagitonaru",
+                    "keizokutekunagakushuugazikoseityounokagitonaru"
+                ]
+            },
+            {
+                "id": "hard-040",
+                "difficulty": "hard",
+                "japanese": "情報を精査し真実を見極める能力",
+                "romaji": "jouhouwoseisashishinjitsuwomikiwamerunouryoku",
+                "alternatives": [
+                    "zyouhouwoseisasisinzituwomikiwamerunouryoku",
+                    "jouhouwoseisashishinzituwomikiwamerunouryoku"
+                ]
+            },
+            {
+                "id": "hard-041",
+                "difficulty": "hard",
+                "japanese": "最善の解決策を模索し続ける姿勢",
+                "romaji": "saizennokaiketsusakuwomosakushitsuzukerushisei",
+                "alternatives": [
+                    "saizennokaiketusakuwomosakusitudukerusisei",
+                    "saizennokaiketsusakuwomosakushitudukerushisei"
+                ]
+            },
+            {
+                "id": "hard-042",
+                "difficulty": "hard",
+                "japanese": "チーム全体の士気を高めるリーダーシップ",
+                "romaji": "chi-muzentennoshikiwotakameruri-da-shippu",
+                "alternatives": ["ti-muzentennosikiwotakameruri-da-sippu", "chi-muzentennoshikiwotakameruri-da-sippu"]
+            },
+            {
+                "id": "hard-043",
+                "difficulty": "hard",
+                "japanese": "最新の技術動向を常にキャッチアップする",
+                "romaji": "saishinnogijutsudoukouwotsunenikyatchiappusuru",
+                "alternatives": [
+                    "saisinnogizyutudoukouwotunenikyattyiappusuru",
+                    "saishinnogijutsudoukouwotunenikyatchiappusuru"
+                ]
+            },
+            {
+                "id": "hard-044",
+                "difficulty": "hard",
+                "japanese": "論理的な矛盾を指摘し議論を深める",
+                "romaji": "ronritekinamujunwoshitekishigironwofukameru",
+                "alternatives": [
+                    "ronritekinamuzunwositekisigironwohukameru",
+                    "ronritekinamujunwoshitekisigironwohukameru"
+                ]
+            },
+            {
+                "id": "hard-045",
+                "difficulty": "hard",
+                "japanese": "地域社会との共生を大切にする活動",
+                "romaji": "chiikishakaitonokyouseiwotaisetsunisurukatsudou",
+                "alternatives": [
+                    "tiikisikaitonokyouseiwotaisetunisurukatudou",
+                    "chiikishakaitonokyouseiwotaisetunisurukatsudou"
+                ]
+            },
+            {
+                "id": "hard-046",
+                "difficulty": "hard",
+                "japanese": "生産性を向上させるための自動化ツール",
+                "romaji": "seisannseiwokoujousaserutamenojidoukatsu-ru",
+                "alternatives": [
+                    "seisannseiwokoujousaserutamenozidoukatsu-ru",
+                    "seisannseiwokoujousaserutamenojidoukatsu-ru"
+                ]
+            },
+            {
+                "id": "hard-047",
+                "difficulty": "hard",
+                "japanese": "潜在的なリスクを予測し対策を講じる",
+                "romaji": "senzaitekinarisukuwoyosokushitaisakuwokoujiru",
+                "alternatives": [
+                    "sennzaitekinarisukuwoyosokusitaisakuwokouziru",
+                    "senzaitekinarisukuwoyosokushitaisakuwokouziru"
+                ]
+            },
+            {
+                "id": "hard-048",
+                "difficulty": "hard",
+                "japanese": "多様な才能が交差するイノベーションの場",
+                "romaji": "tayounasainougakousasuruinobe-shonnnoba",
+                "alternatives": ["tayounasainougakousasuruinobe-syonnnoba", "tayounasainougakousasuruinobe-shonnnoba"]
+            },
+            {
+                "id": "hard-049",
+                "difficulty": "hard",
+                "japanese": "精神的な豊かさを追求するライフスタイル",
+                "romaji": "seishintekinayutakasawaotsuuyuusururaifusutairu",
+                "alternatives": [
+                    "seisintekinayutakasawaotuuyuusururaifusutairu",
+                    "seishintekinayutakasawaotsuuyuusururaifusutairu"
+                ]
+            },
+            {
+                "id": "hard-050",
+                "difficulty": "hard",
+                "japanese": "伝統を守りつつ新たな変化を取り入れる",
+                "romaji": "dentouwomamoritsutsuarutanahenkawotoriireru",
+                "alternatives": [
+                    "denntouwomamoritsutsuarutanahenkawotoriireru",
+                    "dentouwomamoritsutsuarutanahenkawotoriireru"
+                ]
+            },
+            {
+                "id": "hard-051",
+                "difficulty": "hard",
+                "japanese": "効率的な情報収集と活用のサイクル",
+                "romaji": "kouritsutekinajouhoushuushuutokatsuuyonosaikuru",
+                "alternatives": [
+                    "kouritutekinazyouhousyuusyuutokatsuuyonosaikuru",
+                    "kouritsutekinajouhoushuushuutokatsuuyonosaikuru"
+                ]
+            },
+            {
+                "id": "hard-052",
+                "difficulty": "hard",
+                "japanese": "目標達成に向けた具体的なアクションプラン",
+                "romaji": "mokuhyoutasseinimuketagutaitekinaakushonpuran",
+                "alternatives": [
+                    "mokuhyoutasseinimuketagutaitekinaakusyonpurann",
+                    "mokuhyoutasseinimuketagutaitekinaakushonpurann"
+                ]
+            },
+            {
+                "id": "hard-053",
+                "difficulty": "hard",
+                "japanese": "複雑な因果関係を解き明かす研究",
+                "romaji": "fukuzatunaingakankeiwotokiakasukenkyuu",
+                "alternatives": ["hukuzatunainngakannkeiwotokiakasukenkyuu", "fukuzatunainngakannkeiwotokiakasukenkyuu"]
+            },
+            {
+                "id": "hard-054",
+                "difficulty": "hard",
+                "japanese": "顧客のニーズを正確に把握するヒアリング",
+                "romaji": "kokyakunoni-zuwoseikakunihahokusuruhiaringu",
+                "alternatives": ["kokyakunoni-zuwoseikakunihahokusuruhiarinngu"]
+            },
+            {
+                "id": "hard-055",
+                "difficulty": "hard",
+                "japanese": "自身の強みを最大限に活かすキャリア形成",
+                "romaji": "jishinnotsuyomiwosaidaigennniikasukyariakeisei",
+                "alternatives": [
+                    "zisinnotsuyomiwosaidaigennniikasukyariakeisei",
+                    "jishinnotsuyomiwosaidaigennniikasukyariakeisei"
+                ]
+            },
+            {
+                "id": "hard-056",
+                "difficulty": "hard",
+                "japanese": "時代の波を捉え果敢に挑戦する精神",
+                "romaji": "jidainonamiwotoraekakannnichousensuruseishin",
+                "alternatives": [
+                    "zidainonamiwotoraekakannnityousensuruseisinn",
+                    "jidainonamiwotoraekakannnichousensuruseisinn"
+                ]
+            },
+            {
+                "id": "hard-057",
+                "difficulty": "hard",
+                "japanese": "抽象的な概念を具体例で分かりやすく説明する",
+                "romaji": "chuushoutekinagainenwogutaireidewakariyasukusetsumeisuru",
+                "alternatives": [
+                    "tyuusuutekinaigainenwogutaireidewakariyasukusetumeisuru",
+                    "chuushoutekinagainenwogutaireidewakariyasukusetumeisuru"
+                ]
+            },
+            {
+                "id": "hard-058",
+                "difficulty": "hard",
+                "japanese": "プロジェクトの進捗を管理し納期を守る",
+                "romaji": "purojekutonoshinchokuwokannrinoukiiwomamoru",
+                "alternatives": [
+                    "purojekutonosintokuwokannrinoukiiwomamoru",
+                    "purojekutonoshintokuwokannrinoukiiwomamoru"
+                ]
+            },
+            {
+                "id": "hard-059",
+                "difficulty": "hard",
+                "japanese": "倫理観を持って技術を利用する責任",
+                "romaji": "rinrikannwoomottegijutsuwouriyousurusekinin",
+                "alternatives": [
+                    "rinrikannwoomottegizyutuwouriyousurusekinin",
+                    "rinrikannwoomottegijutsuwouriyousurusekinin"
+                ]
+            },
+            {
+                "id": "hard-060",
+                "difficulty": "hard",
+                "japanese": "多角的な分析を行い経営判断を下す",
+                "romaji": "takakutekinabunsekiwokonaikeieihandannwokudasu",
+                "alternatives": ["takakutekinabunsekiwokonaikeieihandannwokudasu"]
+            },
+            {
+                "id": "hard-061",
+                "difficulty": "hard",
+                "japanese": "デジタルトランスフォーメーションを推進する",
+                "romaji": "dejitarutorannsufo-me-shonnwosuishinsuru",
+                "alternatives": ["dezitarutorannsufo-me-syonnwosuisinsuru", "dejitarutorannsufo-me-shonnwosuisinsuru"]
+            },
+            {
+                "id": "hard-062",
+                "difficulty": "hard",
+                "japanese": "人間中心の設計で使いやすさを向上させる",
+                "romaji": "ningenchushinnnosekkeidekaikyasusawokoujousaseru",
+                "alternatives": [
+                    "ninngentyuusinnnosekkeidetsukaiyasusawokoujousaseru",
+                    "ningenchushinnnosekkeidetsukaiyasusawokoujousaseru"
+                ]
+            },
+            {
+                "id": "hard-063",
+                "difficulty": "hard",
+                "japanese": "グローバルな視点で市場の動向を見抜く",
+                "romaji": "guro-barunashitendeshijounodoukouwominuku",
+                "alternatives": ["guro-barunasitendesizounodoukouwominuku", "guro-barunashitendesizounodoukouwominuku"]
+            },
+            {
+                "id": "hard-064",
+                "difficulty": "hard",
+                "japanese": "クリティカルシンキングで本質的な問いを立てる",
+                "romaji": "kuritikarushinkingudehonshitsutekinatoyiwotateru",
+                "alternatives": [
+                    "kuritikarusinnkinngudehonsitutekinatoyiwotateru",
+                    "kuritikarushinkingudehonsitutekinatoyiwotateru"
+                ]
+            },
+            {
+                "id": "hard-065",
+                "difficulty": "hard",
+                "japanese": "持続可能な社会の実現に向けて貢献する",
+                "romaji": "jizokukanounashakainojitsugennnimuketekoukensuru",
+                "alternatives": [
+                    "zizokukanounasyakainozitsugennnimuketekoukensuru",
+                    "jizokukanounashakainozitsugennnimuketekoukensuru"
+                ]
             }
         ]
     }

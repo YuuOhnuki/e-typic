@@ -34,15 +34,3 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-## Deploy Socket Server on Render
-
-This repository includes a Render Blueprint file: `render.yaml`.
-
-1. Create a new **Blueprint** service on Render from this repository.
-2. Set `NEXT_PUBLIC_APP_ORIGIN` to your frontend URL (for example: `https://your-app.vercel.app`).
-3. Deploy. Render will run:
-   - Build: `npm ci`
-   - Start: `npm run socket`
-
-The Socket server reads Render's `PORT` automatically.

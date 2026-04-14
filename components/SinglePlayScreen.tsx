@@ -25,6 +25,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
     const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
     const [correctCount, setCorrectCount] = useState(0);
     const [totalInputCount, setTotalInputCount] = useState(0);
+    const [errorCount, setErrorCount] = useState(0);
     const [currentQuestionProgress, setCurrentQuestionProgress] = useState(0);
     const [completedQuestionCount, setCompletedQuestionCount] = useState(0);
 
@@ -63,6 +64,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
         setCurrentQuestion(question);
         setCorrectCount(0);
         setTotalInputCount(0);
+        setErrorCount(0);
         setCurrentQuestionProgress(0);
         setCompletedQuestionCount(0);
         setShowResult(false);
@@ -86,6 +88,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
 
         const totalTime = elapsedTime * 1000;
         const kpm = totalInputCount / (totalTime / 60000) || 0;
+        const totalAttemptCount = totalInputCount + errorCount;
 
         const result: GameResult = {
             sessionId: currentSession?.sessionId || `session-${Date.now()}`,
@@ -94,17 +97,17 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
             difficulty,
             totalTime,
             correctCount,
-            errorCount: totalInputCount - correctCount,
+            errorCount,
             totalInputCount,
-            correctRate: totalInputCount > 0 ? (correctCount / totalInputCount) * 100 : 0,
-            errorRate: totalInputCount > 0 ? ((totalInputCount - correctCount) / totalInputCount) * 100 : 0,
+            correctRate: totalAttemptCount > 0 ? (correctCount / totalAttemptCount) * 100 : 0,
+            errorRate: totalAttemptCount > 0 ? (errorCount / totalAttemptCount) * 100 : 0,
             kpm,
         };
 
         setGameResult(result);
         setShowResult(true);
         endGame(result);
-    }, [currentQuestion, elapsedTime, totalInputCount, correctCount, currentSession, difficulty, endGame]);
+    }, [correctCount, currentQuestion, currentSession, difficulty, elapsedTime, endGame, errorCount, totalInputCount]);
 
     /**
      * タイムアップ処理
@@ -130,7 +133,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
     );
 
     const handleError = useCallback(() => {
-        setTotalInputCount((prev) => prev + 1);
+        setErrorCount((prev) => prev + 1);
     }, []);
 
     /**
@@ -250,6 +253,8 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
                     <TypingDisplay
                         key={`${currentQuestion.id}-${completedQuestionCount}`}
                         japanese={currentQuestion.japanese}
+                        romaji={currentQuestion.romaji}
+                        alternatives={currentQuestion.alternatives}
                         accentColor={`${accentColor}-500`}
                         onProgress={handleProgress}
                         onComplete={handleTypingComplete}
@@ -264,12 +269,12 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
                         <div className={`text-2xl font-bold text-${accentColor}-500`}>{correctCount}</div>
                     </div>
                     <div className="space-y-1">
-                        <div className="text-sm text-gray-500">入力数</div>
+                        <div className="text-sm text-gray-500">正タイプ数</div>
                         <div className="text-2xl font-bold text-gray-700">{totalInputCount}</div>
                     </div>
                     <div className="space-y-1">
-                        <div className="text-sm text-gray-500">完了問題数</div>
-                        <div className="text-2xl font-bold text-gray-700">{completedQuestionCount}</div>
+                        <div className="text-sm text-gray-500">誤タイプ数</div>
+                        <div className="text-2xl font-bold text-red-500">{errorCount}</div>
                     </div>
                 </div>
 

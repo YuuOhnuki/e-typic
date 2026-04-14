@@ -37,13 +37,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
                         </div>
 
                         <div className="space-y-1">
-                            <div className="text-sm text-gray-500 uppercase tracking-wide">入力文字数</div>
-                            <div className="text-3xl font-light text-gray-700">{result.correctCount}</div>
+                            <div className="text-sm text-gray-500 uppercase tracking-wide">正タイプ数</div>
+                            <div className="text-3xl font-light text-gray-700">{result.totalInputCount}</div>
                             <div className="text-xs text-gray-400">文字</div>
                         </div>
 
                         <div className="space-y-1">
-                            <div className="text-sm text-gray-500 uppercase tracking-wide">誤字</div>
+                            <div className="text-sm text-gray-500 uppercase tracking-wide">誤タイプ数</div>
                             <div className="text-3xl font-light text-red-500">{result.errorCount}</div>
                             <div className="text-xs text-gray-400">個</div>
                         </div>

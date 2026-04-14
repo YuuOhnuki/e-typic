@@ -74,6 +74,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     const [gameStartedAt, setGameStartedAt] = useState<number | null>(null);
     const [correctCount, setCorrectCount] = useState(0);
     const [totalInputCount, setTotalInputCount] = useState(0);
+    const [errorCount, setErrorCount] = useState(0);
     const [currentQuestionProgress, setCurrentQuestionProgress] = useState(0);
     const [totalCharProgress, setTotalCharProgress] = useState(0);
     const [completedQuestionCount, setCompletedQuestionCount] = useState(0);
@@ -123,6 +124,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             setGameStartedAt(payload.startedAt);
             setCorrectCount(0);
             setTotalInputCount(0);
+            setErrorCount(0);
             setCurrentQuestionProgress(0);
             setTotalCharProgress(0);
             setCompletedQuestionCount(0);
@@ -161,12 +163,12 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 currentCharIndex: totalCharProgress,
                 correctCount,
                 totalInputCount,
-                errorCount: totalInputCount - correctCount,
+                errorCount,
                 elapsedTime: elapsedTime * 1000,
             },
         });
         completionSentRef.current = true;
-    }, [correctCount, totalCharProgress, elapsedTime, ensureSocket, mode, roomState, timeLimit, totalInputCount]);
+    }, [correctCount, elapsedTime, ensureSocket, errorCount, mode, roomState, timeLimit, totalCharProgress, totalInputCount]);
 
     useEffect(() => {
         return () => {
@@ -266,20 +268,16 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
         if (!roomState) return;
         setErrorMessage('');
         const socket = ensureSocket();
-        socket.emit(
-            'room:reopen',
-            { roomCode: roomState.roomCode },
-            (response: UpdateSettingsAck) => {
-                if (!response.ok) {
-                    setErrorMessage(response.message ?? 'ロビーに戻せませんでした。');
-                    return;
-                }
-                if (response.question) {
-                    setQuestion(response.question);
-                }
-                setStayInRoom(false);
-            },
-        );
+        socket.emit('room:reopen', { roomCode: roomState.roomCode }, (response: UpdateSettingsAck) => {
+            if (!response.ok) {
+                setErrorMessage(response.message ?? 'ロビーに戻せませんでした。');
+                return;
+            }
+            if (response.question) {
+                setQuestion(response.question);
+            }
+            setStayInRoom(false);
+        });
     }, [ensureSocket, roomState]);
 
     const handleProgress = useCallback(
@@ -302,28 +300,28 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     currentCharIndex: nextTotalCharProgress,
                     correctCount: nextCorrect,
                     totalInputCount: nextTotal,
-                    errorCount: nextTotal - nextCorrect,
+                    errorCount,
                 },
             });
         },
-        [correctCount, currentQuestionProgress, ensureSocket, roomState, totalCharProgress, totalInputCount],
+        [correctCount, currentQuestionProgress, ensureSocket, errorCount, roomState, totalCharProgress, totalInputCount],
     );
 
     const handleError = useCallback(() => {
         if (!roomState) return;
-        const nextTotal = totalInputCount + 1;
-        setTotalInputCount(nextTotal);
+        const nextErrorCount = errorCount + 1;
+        setErrorCount(nextErrorCount);
         const socket = ensureSocket();
         socket.emit('game:progress', {
             roomCode: roomState.roomCode,
             progress: {
                 currentCharIndex: totalCharProgress,
                 correctCount,
-                totalInputCount: nextTotal,
-                errorCount: nextTotal - correctCount,
+                totalInputCount,
+                errorCount: nextErrorCount,
             },
         });
-    }, [correctCount, ensureSocket, roomState, totalCharProgress, totalInputCount]);
+    }, [correctCount, ensureSocket, errorCount, roomState, totalCharProgress, totalInputCount]);
 
     const handleComplete = useCallback(() => {
         if (mode !== 'playing') return;
@@ -423,7 +421,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                             max={5}
                                             step={1}
                                             value={minutes}
-                                    onChange={(e) => setMinutes(clampMinutes(Number(e.target.value)))}
+                                            onChange={(e) => setMinutes(clampMinutes(Number(e.target.value)))}
                                             className="w-full accent-gray-900"
                                             aria-label="制限時間"
                                         />
@@ -467,9 +465,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 <div className="flex gap-2">
                                     <input
                                         value={roomCodeInput}
-                                        onChange={(e) =>
-                                            setRoomCodeInput(normalizeRoomCode(e.target.value))
-                                        }
+                                        onChange={(e) => setRoomCodeInput(normalizeRoomCode(e.target.value))}
                                         className="flex-1 rounded border border-gray-300 px-3 py-2 tracking-[0.3em]"
                                         placeholder="例: 123"
                                         inputMode="numeric"
@@ -618,6 +614,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             <TypingDisplay
                                 key={`${question.id}-${completedQuestionCount}`}
                                 japanese={question.japanese}
+                                romaji={question.romaji}
+                                alternatives={question.alternatives}
                                 accentColor="blue"
                                 onProgress={handleProgress}
                                 onError={handleError}
@@ -681,7 +679,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 {myResult && (
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2">
                         <div className="text-sm text-gray-500">あなたの成績</div>
-                        <div className="text-sm text-gray-700">入力数: {myResult.totalInputCount}</div>
+                        <div className="text-sm text-gray-700">正タイプ数: {myResult.totalInputCount}</div>
+                        <div className="text-sm text-gray-700">誤タイプ数: {myResult.errorCount}</div>
                         <div className="text-sm text-gray-700">正解率: {myResult.correctRate.toFixed(1)}%</div>
                         <div className="text-sm text-gray-700">KPM: {myResult.kpm.toFixed(1)}</div>
                     </div>

@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { InputState } from '@/types/typing';
 import { romajiEngine } from '@/utils/romajiEngine';
 
 interface TypingDisplayProps {
     japanese: string;
+    romaji?: string;
+    alternatives?: string[];
     accentColor?: string;
     onProgress?: (state: InputState) => void;
     onComplete?: () => void;
@@ -14,14 +16,16 @@ interface TypingDisplayProps {
 
 export const TypingDisplay: React.FC<TypingDisplayProps> = ({
     japanese,
+    romaji,
+    alternatives,
     accentColor = 'emerald',
     onProgress,
     onComplete,
     onError,
 }) => {
     const [userInput, setUserInput] = useState<string>('');
-    const [japaneseIndex, setJapaneseIndex] = useState<number>(0);
-    const [correctIndices, setCorrectIndices] = useState<Set<number>>(new Set());
+    const [typedRomaji, setTypedRomaji] = useState<string>('');
+    const [japaneseProgress, setJapaneseProgress] = useState<number>(0);
     const [typedHistory, setTypedHistory] = useState<Array<{ char: string; correct: boolean }>>([]);
     const [lastError, setLastError] = useState<boolean>(false);
 
@@ -37,6 +41,30 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
 
     const accentColorHex = accentColorMap[accentColor] || '#10b981';
 
+    const targetText = romaji && romaji.trim() ? romaji.trim() : romajiEngine.toRomaji(japanese);
+    const hasExplicitRomaji = Boolean(romaji && romaji.trim());
+    const romajiCandidates = useMemo(() => {
+        const canonicalSources = [targetText, ...(alternatives ?? []).filter(Boolean)];
+        const candidateSet = new Set<string>();
+        for (const source of canonicalSources) {
+            const normalized = source.trim();
+            if (!normalized) continue;
+            candidateSet.add(normalized);
+            romajiEngine.getImeVariantsFromRomaji(normalized).forEach((variant) => candidateSet.add(variant));
+        }
+        return Array.from(candidateSet).sort((a, b) => a.length - b.length);
+    }, [alternatives, targetText]);
+    const pickCandidateForPrefix = useCallback(
+        (prefix: string): string | null => {
+            const matches = romajiCandidates.filter((candidate) => candidate.startsWith(prefix));
+            if (matches.length === 0) return null;
+            const exact = matches.find((candidate) => candidate === prefix);
+            if (exact) return exact;
+            return matches[0];
+        },
+        [romajiCandidates],
+    );
+
     const handleInputChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {
             const newInput = e.target.value;
@@ -49,48 +77,57 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             }
 
             if (newLength === previousLength + 1) {
-                const tempInput = newInput;
                 const inputChar = newInput[newInput.length - 1] ?? '';
-                const checkResult = romajiEngine.checkInput(japanese, japaneseIndex, tempInput);
+                const nextTyped = `${typedRomaji}${inputChar}`;
+                const matchedCandidate = pickCandidateForPrefix(nextTyped);
+                const hasPrefixMatch = matchedCandidate !== null;
+                const hasExactMatch = matchedCandidate === nextTyped;
 
-                if (checkResult.isCorrect) {
+                if (hasPrefixMatch) {
                     setTypedHistory((prev) => [...prev, { char: inputChar, correct: true }]);
-                    setCorrectIndices((prev) => {
-                        const newSet = new Set(prev);
-                        newSet.add(japaneseIndex);
-
-                        if (onProgress) {
-                            onProgress({
-                                currentIndex: checkResult.nextIndex,
-                                correctIndices: Array.from(newSet),
-                                displayText: japanese.substring(0, checkResult.nextIndex),
-                                nextCharToType: romajiEngine.getNextCharHint(japanese, checkResult.nextIndex),
-                                lastError: false,
-                            });
-                        }
-
-                        return newSet;
+                    const activeCandidateLength = matchedCandidate?.length ?? targetText.length;
+                    const nextJapaneseIndex = hasExplicitRomaji
+                        ? Math.floor((nextTyped.length / Math.max(activeCandidateLength, 1)) * japanese.length)
+                        : romajiEngine.analyzeFullInput(japanese, nextTyped).japaneseIndex;
+                    const nextCorrectIndices: number[] = [];
+                    for (let index = 0; index < nextJapaneseIndex; index += 1) {
+                        nextCorrectIndices.push(index);
+                    }
+                    setJapaneseProgress(nextJapaneseIndex);
+                    setTypedRomaji(nextTyped);
+                    onProgress?.({
+                        currentIndex: nextJapaneseIndex,
+                        correctIndices: nextCorrectIndices,
+                        displayText: nextTyped,
+                        nextCharToType: matchedCandidate?.[nextTyped.length] ?? '',
+                        lastError: false,
                     });
-
-                    const newCurrentIndex = checkResult.nextIndex;
-                    setJapaneseIndex(newCurrentIndex);
                     setLastError(false);
                     setUserInput('');
 
-                    if (newCurrentIndex >= japanese.length) {
-                        if (onComplete) {
-                            onComplete();
-                        }
+                    if (hasExactMatch) {
+                        onComplete?.();
                     }
                 } else {
                     setTypedHistory((prev) => [...prev, { char: inputChar, correct: false }]);
                     setLastError(true);
-                    onError?.(japaneseIndex);
+                    onError?.(japaneseProgress);
                     setUserInput('');
                 }
             }
         },
-        [japanese, japaneseIndex, userInput, onProgress, onComplete, onError],
+        [
+            hasExplicitRomaji,
+            japanese,
+            japaneseProgress,
+            onComplete,
+            onError,
+            onProgress,
+            pickCandidateForPrefix,
+            targetText.length,
+            typedRomaji,
+            userInput,
+        ],
     );
 
     useEffect(() => {
@@ -102,12 +139,12 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
         inputRef.current?.focus();
     };
 
-    const romajiTarget = romajiEngine.toRomaji(japanese);
-    const completedRomaji = romajiEngine.toRomaji(japanese.substring(0, japaneseIndex));
+    const romajiTarget = pickCandidateForPrefix(typedRomaji) ?? targetText;
+    const completedRomaji = typedRomaji;
 
     const displayChars = japanese.split('').map((char: string, index: number) => {
-        const isCorrect = correctIndices.has(index);
-        const isCurrent = index === japaneseIndex;
+        const isCorrect = index < japaneseProgress;
+        const isCurrent = index === japaneseProgress;
 
         return {
             char,
@@ -123,7 +160,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             onClick={handleContainerClick}
         >
             <div className="text-center mb-12">
-                <div className="text-4xl md:text-5xl font-light leading-relaxed tracking-wide h-24 flex items-center justify-center">
+                <div className="text-3xl md:text-4xl font-light leading-relaxed tracking-wide min-h-24 break-words whitespace-pre-wrap">
                     {displayChars.map(({ char, index, isCorrect, isCurrent }) => (
                         <span
                             key={index}
@@ -193,13 +230,13 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
 
             <div className="text-center mb-6">
                 <div className="text-sm text-gray-500 tabular-nums">
-                    {japaneseIndex} / {japanese.length}
+                    {typedRomaji.length} / {targetText.length}
                 </div>
                 <div className="mt-2 w-full bg-gray-200 rounded-full h-1 overflow-hidden">
                     <div
                         className="h-full transition-all duration-300"
                         style={{
-                            width: `${(japaneseIndex / japanese.length) * 100}%`,
+                            width: `${(typedRomaji.length / Math.max(romajiTarget.length, 1)) * 100}%`,
                             backgroundColor: accentColor,
                         }}
                     />
@@ -211,13 +248,13 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                 type="text"
                 value={userInput}
                 onChange={handleInputChange}
-                className="absolute inset-0 opacity-0"
+                className="absolute -left-[9999px] h-px w-px opacity-0 pointer-events-none"
                 autoFocus
                 autoComplete="off"
                 spellCheck="false"
             />
 
-            {japaneseIndex >= japanese.length && (
+            {typedRomaji.length >= romajiTarget.length && (
                 <div className="text-center mt-12">
                     <div className="text-2xl font-light" style={{ color: accentColor }}>
                         完了！
