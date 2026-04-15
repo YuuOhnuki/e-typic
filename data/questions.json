@@ -896,10 +896,10 @@
                 "id": "hard-036",
                 "difficulty": "hard",
                 "japanese": "客観的なデータに基づいて現状を分析する",
-                "romaji": "kyakkantekunade-tanimotozuitegenjouwoabunsekisuru",
+                "romaji": "kyakkantekinade-tanimotozuitegenjouwobunsekisuru",
                 "alternatives": [
-                    "kyakkantekunade-tanimotozuitegenzyouwoabunsekisuru",
-                    "kyakkantekunade-tanimotozuitegenjouwoabunsekisuru"
+                    "kyakkantekinade-tanimotozuitegenzyouwobunsekisuru",
+                    "kyakkantekinade-tanimotozuitegenjouwobunsekisuru"
                 ]
             },
             {
@@ -915,8 +915,8 @@
                 "japanese": "創造的なアイデアが新しい市場を切り拓く",
                 "romaji": "souzoutekinaaideagatarashiishijouwokirihiraku",
                 "alternatives": [
-                    "souzoutekinaaideagatarasiisizouwokirihiraku",
-                    "souzoutekinaaideagatarashiisizouwokirihiraku"
+                    "souzoutekinaaideagatarasiisizyouwokirihiraku",
+                    "souzoutekinaaideagatarashiisizyouwokirihiraku"
                 ]
             },
             {
@@ -962,7 +962,7 @@
                 "japanese": "最新の技術動向を常にキャッチアップする",
                 "romaji": "saishinnogijutsudoukouwotsunenikyatchiappusuru",
                 "alternatives": [
-                    "saisinnogizyutudoukouwotunenikyattyiappusuru",
+                    "saisinnogizyutudoukouwotunenikyattiappusuru",
                     "saishinnogijutsudoukouwotunenikyatchiappusuru"
                 ]
             },
@@ -1017,10 +1017,10 @@
                 "id": "hard-049",
                 "difficulty": "hard",
                 "japanese": "精神的な豊かさを追求するライフスタイル",
-                "romaji": "seishintekinayutakasawaotsuuyuusururaifusutairu",
+                "romaji": "seishintekinayutakasawaotsuikyuusururaifusutairu",
                 "alternatives": [
-                    "seisintekinayutakasawaotuuyuusururaifusutairu",
-                    "seishintekinayutakasawaotsuuyuusururaifusutairu"
+                    "seisintekinayutakasawaotuikyuusururaifusutairu",
+                    "seishintekinayutakasawaotsuikyuusururaifusutairu"
                 ]
             },
             {
@@ -1029,18 +1029,18 @@
                 "japanese": "伝統を守りつつ新たな変化を取り入れる",
                 "romaji": "dentouwomamoritsutsuarutanahenkawotoriireru",
                 "alternatives": [
-                    "denntouwomamoritsutsuarutanahenkawotoriireru",
-                    "dentouwomamoritsutsuarutanahenkawotoriireru"
+                    "denntouwomamoritsutsuaratanahenkawotoriireru",
+                    "dentouwomamoritsutsuaratanahenkawotoriireru"
                 ]
             },
             {
                 "id": "hard-051",
                 "difficulty": "hard",
                 "japanese": "効率的な情報収集と活用のサイクル",
-                "romaji": "kouritsutekinajouhoushuushuutokatsuuyonosaikuru",
+                "romaji": "kouritsutekinajouhoushuushuutokatsuuyounosaikuru",
                 "alternatives": [
-                    "kouritutekinazyouhousyuusyuutokatsuuyonosaikuru",
-                    "kouritsutekinajouhoushuushuutokatsuuyonosaikuru"
+                    "kouritutekinazyouhousyuusyuutokatsuuyounosaikuru",
+                    "kouritsutekinajouhoushuushuutokatsuuyounosaikuru"
                 ]
             },
             {
@@ -1064,8 +1064,8 @@
                 "id": "hard-054",
                 "difficulty": "hard",
                 "japanese": "顧客のニーズを正確に把握するヒアリング",
-                "romaji": "kokyakunoni-zuwoseikakunihahokusuruhiaringu",
-                "alternatives": ["kokyakunoni-zuwoseikakunihahokusuruhiarinngu"]
+                "romaji": "kokyakunoni-zuwoseikakunihaakusuruhiaringu",
+                "alternatives": ["kokyakunoni-zuwoseikakunihaakusuruhiarinngu"]
             },
             {
                 "id": "hard-055",
@@ -1101,10 +1101,10 @@
                 "id": "hard-058",
                 "difficulty": "hard",
                 "japanese": "プロジェクトの進捗を管理し納期を守る",
-                "romaji": "purojekutonoshinchokuwokannrinoukiiwomamoru",
+                "romaji": "purojekutonoshinchokuwokannrishinoukiiwomamoru",
                 "alternatives": [
-                    "purojekutonosintokuwokannrinoukiiwomamoru",
-                    "purojekutonoshintokuwokannrinoukiiwomamoru"
+                    "purojekutonosintyokuwokannrishinoukiiwomamoru",
+                    "purojekutonoshintyokuwokannrisinoukiiwomamoru"
                 ]
             },
             {
