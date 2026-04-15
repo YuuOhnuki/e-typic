@@ -5,7 +5,7 @@ import { Server } from 'socket.io';
 
 const PORT = Number(process.env.PORT ?? process.env.MULTIPLAYER_PORT ?? 4001);
 const CLIENT_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'http://localhost:3000';
-const MAX_PLAYERS_PER_ROOM = 8;
+const MAX_PLAYERS_PER_ROOM = 12;
 const MINUTES_MIN = 1;
 const MINUTES_MAX = 5;
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard']);

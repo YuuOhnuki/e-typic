@@ -228,28 +228,29 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
     }
 
     return (
-        <div className="w-full min-h-screen bg-white p-4 md:p-8">
-            <div className="max-w-3xl mx-auto space-y-8">
-                {/* ヘッダー */}
-                <div className="border-b border-gray-200 pb-6 space-y-3">
-                    <div className="flex items-center justify-between gap-4">
-                        <h1 className="text-3xl md:text-4xl font-light">タイピング練習</h1>
-                        <Button onClick={handleBackToMenu} variant="outline" className="rounded-xl" size="lg">
-                            戻る
-                        </Button>
+        <div className="w-full h-screen bg-white flex flex-col">
+            <div className="flex-shrink-0 p-4 md:p-6 border-b border-gray-200">
+                <div className="max-w-3xl mx-auto flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-light">タイピング練習</h1>
+                        <div className="text-sm text-gray-500">
+                            難易度: {difficultyLabelMap[difficulty] ?? difficulty} / 制限時間: {gameDurationMinutes}分
+                        </div>
                     </div>
-                    <div className="text-gray-500">
-                        難易度: {difficultyLabelMap[difficulty] ?? difficulty} / 制限時間: {gameDurationMinutes}分
-                    </div>
+                    <Button onClick={handleBackToMenu} variant="outline" className="rounded-xl" size="sm">
+                        戻る
+                    </Button>
                 </div>
+            </div>
 
-                {/* タイマー */}
-                <div className="bg-gray-50 p-6 rounded-lg">
+            <div className="flex-shrink-0 p-4 md:p-6">
+                <div className="max-w-3xl mx-auto">
                     <ProgressBar timeLimit={timeLimit} elapsedSeconds={elapsedTime} />
                 </div>
+            </div>
 
-                {/* メインゲーム画面 */}
-                <div className="bg-gray-50 p-8 rounded-lg">
+            <div className="flex-1 flex items-center justify-center p-4 md:p-6">
+                <div className="w-full max-w-4xl">
                     <TypingDisplay
                         key={`${currentQuestion.id}-${completedQuestionCount}`}
                         japanese={currentQuestion.japanese}
@@ -261,25 +262,26 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
                         onError={handleError}
                     />
                 </div>
+            </div>
 
-                {/* 統計情報（下部） */}
-                <div className="grid grid-cols-3 md:grid-cols-3 gap-4 text-center">
-                    <div className="space-y-1">
-                        <div className="text-sm text-gray-500">正解数</div>
-                        <div className={`text-2xl font-bold text-${accentColor}-500`}>{correctCount}</div>
+            <div className="flex-shrink-0 p-4 md:p-6 border-t border-gray-200">
+                <div className="max-w-3xl mx-auto">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="space-y-1">
+                            <div className="text-sm text-gray-500">正解数</div>
+                            <div className={`text-xl font-bold text-${accentColor}-500`}>{correctCount}</div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="text-sm text-gray-500">正タイプ数</div>
+                            <div className="text-xl font-bold text-gray-700">{totalInputCount}</div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="text-sm text-gray-500">誤タイプ数</div>
+                            <div className="text-xl font-bold text-red-500">{errorCount}</div>
+                        </div>
                     </div>
-                    <div className="space-y-1">
-                        <div className="text-sm text-gray-500">正タイプ数</div>
-                        <div className="text-2xl font-bold text-gray-700">{totalInputCount}</div>
-                    </div>
-                    <div className="space-y-1">
-                        <div className="text-sm text-gray-500">誤タイプ数</div>
-                        <div className="text-2xl font-bold text-red-500">{errorCount}</div>
-                    </div>
+                    <div className="text-center text-sm text-gray-400 mt-4">キーボードでタイピング</div>
                 </div>
-
-                {/* キーボードフォーカスヒント */}
-                <div className="text-center text-sm text-gray-400 py-4">キーボードでタイピング</div>
             </div>
         </div>
     );

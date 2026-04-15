@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { Crown } from 'lucide-react';
 import { TypingDisplay } from '@/components/TypingDisplay';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { GameStartedPayload, MultiplayerRoomState } from '@/types/multiplayer';
 import questionsData from '@/data/questions.json';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_MULTIPLAYER_URL ?? 'http://localhost:4001';
+const HEALTH_CHECK_URL = 'https://dojo-597h.onrender.com/health';
 const DEFAULT_PLAYER_NAME = 'Player';
 const DEFAULT_HOST_NAME = 'Host';
 const MINUTES_MIN = 1;
@@ -81,6 +83,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [stayInRoom, setStayInRoom] = useState(false);
     const completionSentRef = useRef(false);
+    const [serverOnline, setServerOnline] = useState<boolean | null>(null);
 
     const isHost = roomState?.hostPlayerId === playerId;
     const currentRoomCode = roomState?.roomCode ?? '';
@@ -168,13 +171,36 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             },
         });
         completionSentRef.current = true;
-    }, [correctCount, elapsedTime, ensureSocket, errorCount, mode, roomState, timeLimit, totalCharProgress, totalInputCount]);
+    }, [
+        correctCount,
+        elapsedTime,
+        ensureSocket,
+        errorCount,
+        mode,
+        roomState,
+        timeLimit,
+        totalCharProgress,
+        totalInputCount,
+    ]);
 
     useEffect(() => {
         return () => {
             socketRef.current?.disconnect();
             socketRef.current = null;
         };
+    }, []);
+
+    useEffect(() => {
+        const checkServerHealth = async () => {
+            try {
+                const response = await fetch(HEALTH_CHECK_URL);
+                console.log('Health check response:', response);
+                setServerOnline(response.ok);
+            } catch {
+                setServerOnline(false);
+            }
+        };
+        checkServerHealth();
     }, []);
 
     const createRoom = useCallback(() => {
@@ -304,7 +330,15 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 },
             });
         },
-        [correctCount, currentQuestionProgress, ensureSocket, errorCount, roomState, totalCharProgress, totalInputCount],
+        [
+            correctCount,
+            currentQuestionProgress,
+            ensureSocket,
+            errorCount,
+            roomState,
+            totalCharProgress,
+            totalInputCount,
+        ],
     );
 
     const handleError = useCallback(() => {
@@ -361,6 +395,16 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             <div className="min-h-screen flex items-center justify-center px-4">
                 <div className="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-6 space-y-5">
                     <h2 className="text-2xl font-light">マルチプレイ</h2>
+                    {serverOnline === false && (
+                        <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                            <div className="text-sm text-red-700">サーバーがオフラインです。後ほどお試しください。</div>
+                        </div>
+                    )}
+                    {serverOnline === true && (
+                        <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+                            <div className="text-sm text-green-700">サーバーはオンラインです。</div>
+                        </div>
+                    )}
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-1 grid grid-cols-2 gap-1">
                         <button
                             type="button"
@@ -509,20 +553,46 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     </div>
 
                     <div className="space-y-2">
-                        {ranking.map((player) => (
-                            <div
-                                key={player.playerId}
-                                className="rounded border border-gray-200 px-3 py-2 flex justify-between"
-                            >
-                                <div>
-                                    {player.name}
-                                    {player.playerId === roomState?.hostPlayerId && (
-                                        <span className="ml-2 text-xs text-gray-500">HOST</span>
-                                    )}
+                        <div className="text-sm text-gray-500">参加者 ({ranking.length})</div>
+                        <div className="max-h-64 overflow-y-auto space-y-2">
+                            {ranking.map((player, idx) => (
+                                <div
+                                    key={player.playerId}
+                                    className={`rounded border border-gray-200 px-3 py-2 flex justify-between ${
+                                        player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                    }`}
+                                >
+                                    <div className="flex items-center">
+                                        <span
+                                            className={`mr-2 text-sm font-semibold ${
+                                                idx === 0
+                                                    ? 'text-yellow-600'
+                                                    : idx === 1
+                                                      ? 'text-gray-400'
+                                                      : idx === 2
+                                                        ? 'text-amber-600'
+                                                        : 'text-gray-500'
+                                            }`}
+                                        >
+                                            {idx + 1}.
+                                        </span>
+                                        {player.playerId === roomState?.hostPlayerId && (
+                                            <Crown className="mr-2 w-4 h-4 text-yellow-500" />
+                                        )}
+                                        {player.name}
+
+                                        {player.playerId === playerId && (
+                                            <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-1 rounded">
+                                                YOU
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        {player.isCompleted ? '完了' : '待機中'}
+                                    </div>
                                 </div>
-                                <div className="text-xs text-gray-500">{player.isCompleted ? '完了' : '待機中'}</div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
 
                     <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
@@ -624,28 +694,55 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                         </div>
 
                         <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-                            <div className="text-sm text-gray-500">リアルタイム進捗</div>
-                            {ranking.map((player, idx) => (
-                                <div key={player.playerId} className="rounded border border-gray-200 p-3 space-y-1">
-                                    <div className="flex justify-between text-sm">
-                                        <span>
-                                            {idx + 1}. {player.name}
-                                        </span>
-                                        <span className="text-gray-500">{player.isCompleted ? '完了' : '進行中'}</span>
+                            <div className="text-sm text-gray-500">リアルタイム進捗 ({ranking.length})</div>
+                            <div className="max-h-96 overflow-y-auto space-y-3">
+                                {ranking.map((player, idx) => (
+                                    <div
+                                        key={player.playerId}
+                                        className={`rounded border border-gray-200 p-3 space-y-1 ${
+                                            player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                        }`}
+                                    >
+                                        <div className="flex justify-between text-sm">
+                                            <span className="flex items-center">
+                                                <span
+                                                    className={`mr-2 font-semibold ${
+                                                        idx === 0
+                                                            ? 'text-yellow-600'
+                                                            : idx === 1
+                                                              ? 'text-gray-400'
+                                                              : idx === 2
+                                                                ? 'text-amber-600'
+                                                                : 'text-gray-500'
+                                                    }`}
+                                                >
+                                                    {idx + 1}.
+                                                </span>
+                                                {player.name}
+                                                {player.playerId === playerId && (
+                                                    <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-1 rounded">
+                                                        YOU
+                                                    </span>
+                                                )}
+                                            </span>
+                                            <span className="text-gray-500">
+                                                {player.isCompleted ? '完了' : '進行中'}
+                                            </span>
+                                        </div>
+                                        <div className="h-2 rounded bg-gray-100 overflow-hidden">
+                                            <div
+                                                className="h-full bg-gray-700 transition-all duration-200"
+                                                style={{
+                                                    width: `${Math.min((player.currentCharIndex / progressMax) * 100, 100)}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                            文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
+                                        </div>
                                     </div>
-                                    <div className="h-2 rounded bg-gray-100 overflow-hidden">
-                                        <div
-                                            className="h-full bg-gray-700 transition-all duration-200"
-                                            style={{
-                                                width: `${Math.min((player.currentCharIndex / progressMax) * 100, 100)}%`,
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                        文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -658,35 +755,55 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             <div className="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-6 space-y-4">
                 <h2 className="text-2xl font-light">レース結果</h2>
                 <div className="space-y-2">
-                    <div className="text-sm text-gray-500">ランキング</div>
-                </div>
-                <div className="space-y-2">
-                    {ranking.map((player, index) => (
-                        <div
-                            key={player.playerId}
-                            className="rounded border border-gray-200 px-3 py-2 flex justify-between"
-                        >
-                            <div>
-                                {index + 1}. {player.name}
+                    <div className="text-sm text-gray-500">ランキング ({ranking.length})</div>
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                        {ranking.map((player, index) => (
+                            <div
+                                key={player.playerId}
+                                className={`rounded border border-gray-200 px-3 py-2 flex justify-between ${
+                                    player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                }`}
+                            >
+                                <div className="flex items-center">
+                                    <span
+                                        className={`mr-2 font-semibold ${
+                                            index === 0
+                                                ? 'text-yellow-600'
+                                                : index === 1
+                                                  ? 'text-gray-400'
+                                                  : index === 2
+                                                    ? 'text-amber-600'
+                                                    : 'text-gray-500'
+                                        }`}
+                                    >
+                                        {index + 1}.
+                                    </span>
+                                    {player.name}
+                                    {player.playerId === playerId && (
+                                        <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-1 rounded">YOU</span>
+                                    )}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                    文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
+                                </div>
                             </div>
-                            <div className="text-sm text-gray-500">
-                                文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {myResult && (
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-2">
-                        <div className="text-sm text-gray-500">あなたの成績</div>
-                        <div className="text-sm text-gray-700">正タイプ数: {myResult.totalInputCount}</div>
-                        <div className="text-sm text-gray-700">誤タイプ数: {myResult.errorCount}</div>
-                        <div className="text-sm text-gray-700">正解率: {myResult.correctRate.toFixed(1)}%</div>
-                        <div className="text-sm text-gray-700">KPM: {myResult.kpm.toFixed(1)}</div>
+                    <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 space-y-2">
+                        <div className="text-sm font-semibold text-blue-700">あなたの成績</div>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+                            <div>正タイプ数: {myResult.totalInputCount}</div>
+                            <div>誤タイプ数: {myResult.errorCount}</div>
+                            <div>正解率: {myResult.correctRate.toFixed(1)}%</div>
+                            <div>KPM: {myResult.kpm.toFixed(1)}</div>
+                        </div>
                     </div>
                 )}
 
-                <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-3">
                     <Button onClick={onBackToHome} className="rounded-xl bg-gray-900 hover:bg-gray-800 text-white">
                         ホームに戻る
                     </Button>
