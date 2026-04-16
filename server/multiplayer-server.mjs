@@ -78,7 +78,7 @@ const server = http.createServer((req, res) => {
 });
 const io = new Server(server, {
     cors: {
-        origin: CLIENT_ORIGIN,
+        origin: ['https://localhost:3000', CLIENT_ORIGIN],
         credentials: true,
     },
 });
