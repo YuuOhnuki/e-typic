@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Home, RotateCcw } from 'lucide-react';
 import { GameResult } from '@/types/typing';
 import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
@@ -23,7 +24,13 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
             {/* ヘッダー */}
             <div className="flex-shrink-0 p-6 border-b border-border/70">
                 <div className="max-w-2xl mx-auto flex text-center items-center">
-                    <h1 className="text-3xl font-light">DOJO</h1>
+                    <Image
+                        src="/logo.svg"
+                        alt="DOJO"
+                        width={240}
+                        height={76}
+                        className="brand-logo h-auto w-[150px] md:w-[180px]"
+                    />
                 </div>
             </div>
 

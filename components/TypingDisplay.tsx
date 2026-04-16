@@ -212,8 +212,8 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                                 key={`${item.char}-${idx}`}
                                 className={`inline-block mr-1 px-2 py-1 rounded border transition-transform duration-150 ${
                                     item.correct
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                        : 'bg-red-50 text-red-600 border-red-200'
+                                        ? 'border-emerald-500/35 bg-emerald-500/15 text-emerald-700 backdrop-blur-sm dark:text-emerald-200'
+                                        : 'border-red-500/35 bg-red-500/15 text-red-700 backdrop-blur-sm dark:text-red-200'
                                 }`}
                             >
                                 {item.char}
@@ -266,7 +266,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             )}
 
             {lastError && (
-                <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow-sm animate-soft-shake">
+                <div className="fixed bottom-2 left-4 rounded-xl border border-red-500/35 bg-red-500/15 px-4 py-2 text-red-700 shadow-sm backdrop-blur-md animate-soft-shake dark:text-red-200">
                     誤字。もう一度入力してください。
                 </div>
             )}

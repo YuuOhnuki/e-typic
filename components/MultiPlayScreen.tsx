@@ -438,7 +438,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 <input
                                     value={playerName}
                                     onChange={(e) => setPlayerName(e.target.value)}
-                                    className="w-full rounded border border-border bg-background px-3 py-2"
+                                    className="surface-input w-full px-3 py-2"
                                     placeholder="名前を入力"
                                     maxLength={16}
                                 />
@@ -450,7 +450,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                     <select
                                         value={difficulty}
                                         onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                                        className="w-full rounded border border-border bg-background px-3 py-2"
+                                        className="surface-input w-full px-3 py-2"
                                     >
                                         {difficultyOptions.map((item) => (
                                             <option key={item.key} value={item.key}>
@@ -504,7 +504,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 <input
                                     value={playerName}
                                     onChange={(e) => setPlayerName(e.target.value)}
-                                    className="w-full rounded border border-border bg-background px-3 py-2"
+                                    className="surface-input w-full px-3 py-2"
                                     placeholder="名前を入力"
                                     maxLength={16}
                                 />
@@ -523,15 +523,15 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                         <InputOTPGroup className="gap-2">
                                             <InputOTPSlot
                                                 index={0}
-                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm first:border-l"
+                                                className="h-12 w-12 rounded-md border border-border/75 bg-card/65 text-xl font-semibold shadow-sm first:border-l backdrop-blur-sm"
                                             />
                                             <InputOTPSlot
                                                 index={1}
-                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm"
+                                                className="h-12 w-12 rounded-md border border-border/75 bg-card/65 text-xl font-semibold shadow-sm backdrop-blur-sm"
                                             />
                                             <InputOTPSlot
                                                 index={2}
-                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm"
+                                                className="h-12 w-12 rounded-md border border-border/75 bg-card/65 text-xl font-semibold shadow-sm backdrop-blur-sm"
                                             />
                                         </InputOTPGroup>
                                     </InputOTP>
@@ -624,7 +624,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 <select
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                                    className="w-full rounded border border-border bg-background px-3 py-2 disabled:bg-muted"
+                                    className="surface-input w-full px-3 py-2 disabled:bg-muted/50 disabled:backdrop-blur-0"
                                     disabled={!isHost}
                                 >
                                     {difficultyOptions.map((item) => (
@@ -636,7 +636,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             </div>
                             <div className="space-y-2">
                                 <div className="text-xs text-muted-foreground">制限時間（分）</div>
-                                <div className="rounded-xl border border-border px-4 py-3 bg-background/70">
+                                <div className="surface-muted px-4 py-3">
                                     <input
                                         type="range"
                                         min={1}

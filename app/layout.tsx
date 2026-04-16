@@ -16,9 +16,49 @@ const geistMono = Geist_Mono({
     subsets: ['latin'],
 });
 
+const siteName = 'DOJO';
+const siteDescription = 'DOJOは、ローマ字入力を中心に日本語タイピングを楽しく継続できる練習サイトです。';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 export const metadata: Metadata = {
-    title: 'DOJO | タイピング練習',
-    description: 'タイピング練習サイト',
+    metadataBase: new URL(siteUrl),
+    applicationName: siteName,
+    title: {
+        default: `${siteName} | タイピング練習`,
+        template: `%s | ${siteName}`,
+    },
+    description: siteDescription,
+    keywords: ['タイピング', 'タイピング練習', 'ローマ字', '日本語入力', 'DOJO'],
+    alternates: {
+        canonical: '/',
+    },
+    openGraph: {
+        type: 'website',
+        locale: 'ja_JP',
+        url: '/',
+        title: `${siteName} | タイピング練習`,
+        description: siteDescription,
+        siteName,
+        images: [
+            {
+                url: '/logo.svg',
+                width: 1200,
+                height: 630,
+                alt: `${siteName} のロゴ`,
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: `${siteName} | タイピング練習`,
+        description: siteDescription,
+        images: ['/logo.svg'],
+    },
+    icons: {
+        icon: '/logo.svg',
+        shortcut: '/logo.svg',
+        apple: '/logo.svg',
+    },
 };
 
 export default function RootLayout({

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ChevronLeft, Clock3, Crown, Swords, UserRound } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
@@ -67,9 +68,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
             </div>
 
             {/* ロゴ/タイトル */}
-            <div className="relative text-center mb-16 space-y-4">
-                <div className="text-7xl md:text-8xl font-light tracking-wider">DOJO</div>
-                <div className="text-muted-foreground text-sm tracking-widest">TYPING PRACTICE</div>
+            <div className="relative text-center mb-4 space-y-4">
+                <div className="flex justify-center">
+                    <Image
+                        src="/logo.svg"
+                        alt="DOJO"
+                        width={420}
+                        height={132}
+                        priority
+                        className="brand-logo h-auto w-[260px] md:w-[340px]"
+                    />
+                </div>
             </div>
 
             {/* ボタングループ */}
@@ -92,7 +101,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
                         </ActionButton>
                     </ActionButtonRow>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         <div className="text-center text-sm tracking-wide text-muted-foreground">難易度を選択</div>
                         <div className="space-y-2">
                             <div className="surface-muted px-4 py-3">
