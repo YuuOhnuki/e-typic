@@ -5,7 +5,7 @@
 /**
  * 難易度レベル
  */
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'survival';
 
 /**
  * 難易度の詳細設定
@@ -86,6 +86,10 @@ export interface GameResult {
     errorRate: number;
     kpm: number; // キーストロークパーミニット
     rank?: number; // マルチプレイの場合のランク
+    maxCombo?: number;
+    completedQuestionCount?: number;
+    survivalDurationSeconds?: number;
+    reachedPhase?: number;
 }
 
 /**

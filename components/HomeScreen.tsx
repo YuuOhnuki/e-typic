@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ChevronLeft, Clock3, Crown, Swords, UserRound } from 'lucide-react';
+import { ChevronLeft, Clock3, Crown, Flame, Swords, UserRound } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
@@ -28,6 +28,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
         { key: 'easy', label: '初級', description: '単語中心', icon: UserRound },
         { key: 'medium', label: '中級', description: '文をテンポ良く', icon: Swords },
         { key: 'hard', label: '上級', description: '長文チャレンジ', icon: Crown },
+        { key: 'survival', label: '極限', description: 'HP制サバイバル', icon: Flame },
     ];
 
     React.useEffect(() => {

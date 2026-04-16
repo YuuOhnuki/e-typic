@@ -11,6 +11,7 @@ interface TypingDisplayProps {
     romaji?: string;
     alternatives?: string[];
     accentColor?: string;
+    difficulty?: string;
     onProgress?: (state: InputState) => void;
     onComplete?: () => void;
     onError?: (position: number) => void;
@@ -21,6 +22,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
     romaji,
     alternatives,
     accentColor = 'emerald',
+    difficulty,
     onProgress,
     onComplete,
     onError,
@@ -34,9 +36,17 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
     const [isErrorToastFading, setIsErrorToastFading] = useState<boolean>(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const typedHistoryContainerRef = useRef<HTMLDivElement>(null);
     const soundPlayerRef = useRef(createTypingSoundPlayer());
     const errorToastFadeTimerRef = useRef<number | null>(null);
     const errorToastHideTimerRef = useRef<number | null>(null);
+
+    // typed history が更新されたら常に右にスクロール
+    useEffect(() => {
+        if (typedHistoryContainerRef.current) {
+            typedHistoryContainerRef.current.scrollLeft = typedHistoryContainerRef.current.scrollWidth;
+        }
+    }, [typedHistory]);
 
     const accentColorMap: Record<string, string> = {
         emerald: '#10b981',
@@ -47,6 +57,18 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
     };
 
     const accentColorHex = accentColorMap[accentColor] || '#10b981';
+
+    const difficultyLabelMap: Record<string, string> = {
+        easy: '初級',
+        medium: '中級',
+        hard: '上級',
+    };
+
+    const difficultyColorMap: Record<string, string> = {
+        easy: 'bg-blue-500/20 text-blue-700 dark:text-blue-200 border-blue-500/50',
+        medium: 'bg-amber-500/20 text-amber-700 dark:text-amber-200 border-amber-500/50',
+        hard: 'bg-red-500/20 text-red-700 dark:text-red-200 border-red-500/50',
+    };
 
     const targetText = romaji && romaji.trim() ? romaji.trim() : romajiEngine.toRomaji(japanese);
     const hasExplicitRomaji = Boolean(romaji && romaji.trim());
@@ -203,6 +225,13 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             onClick={handleContainerClick}
         >
             <div className="text-center mb-8">
+                {difficulty && (
+                    <div className="mb-3 flex justify-center">
+                        <div className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold border ${difficultyColorMap[difficulty] || ''}`}>
+                            {difficultyLabelMap[difficulty] || difficulty}
+                        </div>
+                    </div>
+                )}
                 <div className="text-2xl md:text-3xl font-light leading-relaxed tracking-wide min-h-20 break-words whitespace-pre-wrap">
                     {displayChars.map(({ char, index, isCorrect, isCurrent }) => (
                         <span
@@ -222,7 +251,6 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             </div>
 
             <div className="text-center mb-6 min-h-10 flex flex-col items-center justify-center space-y-2">
-                <div className="text-sm text-muted-foreground uppercase tracking-[0.25em]">ローマ字全文</div>
                 <div className="text-xl md:text-2xl font-mono tracking-wider text-foreground break-words">
                     {romajiTarget.split('').map((char: string, idx: number) => {
                         const isCompleted = idx < completedRomaji.length;
@@ -243,30 +271,32 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                 </div>
             </div>
 
-            <div className="text-center mb-6 min-h-9">
-                <div className={`text-lg font-mono tracking-wider ${lastError ? 'text-red-500' : 'text-muted-foreground'}`}>
-                    {typedHistory.length > 0 ? (
-                        typedHistory.slice(-20).map((item, idx: number) => (
-                            <span
-                                key={`${item.char}-${idx}`}
-                                className={`inline-block mr-1 px-2 py-1 rounded border transition-transform duration-150 ${
-                                    item.correct
-                                        ? 'border-emerald-500/35 bg-emerald-500/15 text-emerald-700 backdrop-blur-sm dark:text-emerald-200'
-                                        : 'border-red-500/35 bg-red-500/15 text-red-700 backdrop-blur-sm dark:text-red-200'
-                                }`}
-                            >
-                                {item.char}
-                            </span>
-                        ))
-                    ) : userInput ? (
-                        userInput.split('').map((char: string, idx: number) => (
-                            <span key={idx} className="inline-block mr-1 px-1 py-0.5 rounded bg-muted text-foreground">
-                                {char}
-                            </span>
-                        ))
-                    ) : (
-                        <span className="inline-block opacity-0">_</span>
-                    )}
+            <div className="text-center mb-6 min-h-9 px-4 md:px-6">
+                <div className={`text-lg font-mono tracking-wider overflow-hidden ${lastError ? 'text-red-500' : 'text-muted-foreground'}`}>
+                    <div ref={typedHistoryContainerRef} className="inline-flex whitespace-nowrap gap-1 overflow-x-auto scrollbar-hide">
+                        {typedHistory.length > 0 ? (
+                            typedHistory.slice(-20).map((item, idx: number) => (
+                                <span
+                                    key={`${item.char}-${idx}`}
+                                    className={`inline-block px-2 py-1 rounded border transition-transform duration-150 ${
+                                        item.correct
+                                            ? 'border-emerald-500/35 bg-emerald-500/15 text-emerald-700 backdrop-blur-sm dark:text-emerald-200'
+                                            : 'border-red-500/35 bg-red-500/15 text-red-700 backdrop-blur-sm dark:text-red-200'
+                                    }`}
+                                >
+                                    {item.char}
+                                </span>
+                            ))
+                        ) : userInput ? (
+                            userInput.split('').map((char: string, idx: number) => (
+                                <span key={idx} className="inline-block px-1 py-0.5 rounded bg-muted text-foreground">
+                                    {char}
+                                </span>
+                            ))
+                        ) : (
+                            <span className="inline-block opacity-0">_</span>
+                        )}
+                    </div>
                 </div>
             </div>
 

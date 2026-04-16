@@ -19,6 +19,20 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
         return Number(num.toFixed(decimals)).toString();
     };
 
+    const formatDuration = (milliseconds: number): string => {
+        const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const difficultyLabelMap: Record<string, string> = {
+        easy: '初級',
+        medium: '中級',
+        hard: '上級',
+        survival: '極限',
+    };
+
     return (
         <div className="h-dvh flex flex-col overflow-hidden animate-fade-up-soft">
             {/* ヘッダー */}
@@ -29,7 +43,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
                         alt="DOJO"
                         width={240}
                         height={76}
-                        className="brand-logo h-auto w-[150px] md:w-[180px]"
+                        className="brand-logo h-auto w-[100px] md:w-[120px]"
                     />
                 </div>
             </div>
@@ -40,7 +54,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
                     <Card className="surface-card">
                         <CardHeader className="border-b border-border/70 pb-4">
                             <CardTitle className="text-2xl font-light">結果</CardTitle>
-                            <CardDescription>難易度: {result.difficulty}</CardDescription>
+                            <CardDescription>難易度: {difficultyLabelMap[result.difficulty] ?? result.difficulty}</CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-6 pt-6">
@@ -82,6 +96,36 @@ export const ResultCard: React.FC<ResultCardProps> = ({ result, accentColor = 'e
                                             {formatNumber(result.errorRate)}%
                                         </span>
                                     </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-muted-foreground">継続時間</span>
+                                        <span className="font-mono text-base md:text-lg font-semibold text-foreground">
+                                            {formatDuration(result.totalTime)}
+                                        </span>
+                                    </div>
+                                    {typeof result.completedQuestionCount === 'number' && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">問題正解数</span>
+                                            <span className="font-mono text-base md:text-lg font-semibold text-foreground">
+                                                {result.completedQuestionCount}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {typeof result.maxCombo === 'number' && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">最大コンボ</span>
+                                            <span className="font-mono text-base md:text-lg font-semibold text-amber-500">
+                                                {result.maxCombo}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {typeof result.reachedPhase === 'number' && (
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">到達フェーズ</span>
+                                            <span className="font-mono text-base md:text-lg font-semibold text-sky-500">
+                                                Phase {result.reachedPhase}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

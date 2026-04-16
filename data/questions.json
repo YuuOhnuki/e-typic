@@ -393,7 +393,7 @@
                 "difficulty": "medium",
                 "japanese": "明日の予定を確認します",
                 "romaji": "ashitanoyoteiwokakuninshimasu",
-                "alternatives": ["asitanoyoteiwokakuninsimasu"]
+                "alternatives": ["asitanoyoteiwokakuninsimasu","asunoyoteiwokakuninsimasu"]
             },
             {
                 "id": "medium-007",
@@ -511,8 +511,8 @@
                 "id": "medium-023",
                 "difficulty": "medium",
                 "japanese": "趣味は読書と写真撮影です",
-                "romaji": "shumihadokusyotoshashinsatsuieidesu",
-                "alternatives": ["syumihadokusyotosasyinsatsuieidesu"]
+                "romaji": "shumihadokusyotoshashinsatsueiidesu",
+                "alternatives": ["syumihadokusyotosyasinsatsueidesu"]
             },
             {
                 "id": "medium-024",
@@ -539,8 +539,8 @@
                 "id": "medium-027",
                 "difficulty": "medium",
                 "japanese": "今日は風が強いですね",
-                "romaji": "kyouhakazegatsuyuidesune",
-                "alternatives": ["kyouhakazegatuyuidesune"]
+                "romaji": "kyouhakazegatsuyoidesune",
+                "alternatives": ["kyouhakazegatuyoidesune"]
             },
             {
                 "id": "medium-028",
@@ -554,7 +554,7 @@
                 "difficulty": "medium",
                 "japanese": "明日の持ち物を準備する",
                 "romaji": "ashitanomochimonowojunbisuru",
-                "alternatives": ["asitanomotimonowozunbisuru", "ashitanomochimonowojunnbisuru"]
+                "alternatives": ["asitanomotimonowozunbisuru", "ashitanomochimonowojunnbisuru", "asunomochimonowojunnbisuru"]
             },
             {
                 "id": "medium-030",
@@ -567,15 +567,15 @@
                 "id": "medium-031",
                 "difficulty": "medium",
                 "japanese": "窓の外を眺める",
-                "romaji": "madosotowonagameru",
-                "alternatives": ["madosotowonagameru"]
+                "romaji": "madonosotowonagameru",
+                "alternatives": []
             },
             {
                 "id": "medium-032",
                 "difficulty": "medium",
                 "japanese": "夕食は何がいいですか",
-                "romaji": "yuushokunahanigaidesuka",
-                "alternatives": ["yuusyokunahanigaidesuka"]
+                "romaji": "yuushokuhananigaiidesuka",
+                "alternatives": ["yuusyokuhananigaiidesuka"]
             },
             {
                 "id": "medium-033",
@@ -630,8 +630,8 @@
                 "id": "medium-040",
                 "difficulty": "medium",
                 "japanese": "深呼吸して落ち着きましょう",
-                "romaji": "shinkoukyuushiteochitsukimashou",
-                "alternatives": ["sinkoukyuusiteotitukimasyou"]
+                "romaji": "shinkokyuushiteochitsukimashou",
+                "alternatives": ["sinkokyuusiteotitukimasyou"]
             }
         ],
         "hard": [
@@ -701,8 +701,8 @@
                 "id": "hard-009",
                 "difficulty": "hard",
                 "japanese": "多様な視点から物事を考える",
-                "romaji": "tayonashitenkaramonogotowokangaeru",
-                "alternatives": ["tayounasitenkaramonogotowokangaeru", "tayounashitenkaramonogotowokangaeru"]
+                "romaji": "tayounashitenkaramonogotowokangaeru",
+                "alternatives": ["tayounasitenkaramonogotowokangaeru"]
             },
             {
                 "id": "hard-010",
@@ -906,8 +906,12 @@
                 "id": "hard-037",
                 "difficulty": "hard",
                 "japanese": "優先順位を整理してタスクを遂行する",
-                "romaji": "yuusenjuniwoseirishitetasukuwosuikousuru",
-                "alternatives": ["yuusenzuniwoseirisitetasukuwosuikousuru", "yuusenjunniwoseirisitetasukuwosuikousuru"]
+                "romaji": "yuusenjunniwoseirishitetasukuwosuikousuru",
+                "alternatives": [
+                    "yuusenzuniwoseirisitetasukuwosuikousuru",
+                    "yuusenjunniwoseirisitetasukuwosuikousuru",
+                    "yuusenjun'iwoseirishitetasukuwosuikousuru"
+                ]
             },
             {
                 "id": "hard-038",
@@ -990,8 +994,9 @@
                 "id": "hard-046",
                 "difficulty": "hard",
                 "japanese": "生産性を向上させるための自動化ツール",
-                "romaji": "seisannseiwokoujousaserutamenojidoukatsu-ru",
+                "romaji": "seisanseiwokoujousaserutamenojidoukatsu-ru",
                 "alternatives": [
+                    "seisanseiwokoujousaserutamenozidoukatsu-ru",
                     "seisannseiwokoujousaserutamenozidoukatsu-ru",
                     "seisannseiwokoujousaserutamenojidoukatsu-ru"
                 ]
@@ -1103,7 +1108,7 @@
                 "japanese": "プロジェクトの進捗を管理し納期を守る",
                 "romaji": "purojekutonoshinchokuwokannrishinoukiwomamoru",
                 "alternatives": [
-                    "purojekutonosintyokuwokannrishinoukiwomamoru",
+                    "purojekutonosintyokuwokanrishinoukiwomamoru",
                     "purojekutonoshintyokuwokannrisinoukiwomamoru"
                 ]
             },
@@ -1135,8 +1140,11 @@
                 "id": "hard-062",
                 "difficulty": "hard",
                 "japanese": "人間中心の設計で使いやすさを向上させる",
-                "romaji": "ningenchushinnnosekkeidekaikyasusawokoujousaseru",
+                "romaji": "ningenchuushinnnosekkeidetsukaiyasusawokoujousaseru",
                 "alternatives": [
+                    "ningentyuushinnnosekkeidetsukaiyasusawokoujousaseru",
+                    "ningenchuusinnnosekkeidetsukaiyasusawokoujousaseru",
+                    "ninngenchuushinnnosekkeidetsukaiyasusawokoujousaseru",
                     "ninngentyuusinnnosekkeidetsukaiyasusawokoujousaseru",
                     "ningenchushinnnosekkeidetsukaiyasusawokoujousaseru"
                 ]

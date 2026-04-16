@@ -17,7 +17,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ timeLimit, elapsedSeco
 
     return (
         <div className="w-full space-y-2">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-baseline">
                 <div className="text-sm font-medium text-muted-foreground">残り時間</div>
                 <div
                     className={`text-lg font-mono font-bold tabular-nums ${
