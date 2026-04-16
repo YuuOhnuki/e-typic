@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, Play } from 'lucide-react';
 import { TypingDisplay } from '@/components/TypingDisplay';
 import { ProgressBar } from '@/components/ProgressBar';
 import { ResultCard } from '@/components/ResultCard';
-import { Button } from '@/components/ui/button';
+import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
 import { useGameStore } from '@/store/gameStore';
 import { GameResult, Question } from '@/types/typing';
 import questionsData from '@/data/questions.json';
@@ -196,60 +197,65 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
 
     if (!isPlaying || !currentQuestion) {
         return (
-            <div className="w-full h-screen flex flex-col items-center justify-center gap-6">
-                <div className="w-full max-w-md rounded-xl border border-gray-200 bg-gray-50 px-6 py-5 text-center space-y-2">
-                    <div className="text-sm text-gray-500 tracking-wide">ゲーム設定</div>
-                    <div className="text-lg text-gray-800">
+            <div className="w-full h-screen flex flex-col items-center justify-center gap-6 animate-fade-up-soft">
+                <div className="surface-card w-full max-w-md px-6 py-5 text-center space-y-2">
+                    <div className="text-sm text-muted-foreground tracking-wide">ゲーム設定</div>
+                    <div className="text-lg text-foreground">
                         難易度: <span className="font-semibold">{difficultyLabelMap[difficulty] ?? difficulty}</span>
                     </div>
-                    <div className="text-lg text-gray-800">
+                    <div className="text-lg text-foreground">
                         制限時間: <span className="font-semibold">{gameDurationMinutes}分</span>
                     </div>
                 </div>
-                <div className="block space-y-4">
-                    <Button
+                <ActionButtonRow className="w-full max-w-md">
+                    <ActionButton
                         onClick={handleStartGame}
-                        className="w-full rounded-xl font-semibold bg-gray-900 hover:bg-gray-800 text-white"
-                        size="lg"
+                        icon={Play}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
                     >
                         ゲーム開始
-                    </Button>
-                    <Button
+                    </ActionButton>
+                    <ActionButton
                         onClick={handleBackToMenu}
                         variant="ghost"
-                        className="w-full text-gray-600 rounded-xl"
-                        size="lg"
+                        icon={ChevronLeft}
                     >
                         戻る
-                    </Button>
-                </div>
+                    </ActionButton>
+                </ActionButtonRow>
             </div>
         );
     }
 
     return (
-        <div className="w-full h-screen bg-white flex flex-col">
-            <div className="flex-shrink-0 p-4 md:p-6 border-b border-gray-200">
+        <div className="w-full h-screen flex flex-col animate-fade-up-soft">
+            <div className="flex-shrink-0 p-4 md:p-6 border-b border-border/70">
                 <div className="max-w-3xl mx-auto flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-light">タイピング練習</h1>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-muted-foreground">
                             難易度: {difficultyLabelMap[difficulty] ?? difficulty} / 制限時間: {gameDurationMinutes}分
                         </div>
                     </div>
-                    <Button onClick={handleBackToMenu} variant="outline" className="rounded-xl" size="sm">
+                    <ActionButton
+                        onClick={handleBackToMenu}
+                        variant="outline"
+                        className="w-auto py-4"
+                        size="sm"
+                        icon={ChevronLeft}
+                    >
                         戻る
-                    </Button>
+                    </ActionButton>
                 </div>
             </div>
 
-            <div className="flex-shrink-0 p-4 md:p-6">
+            <div className="flex-shrink-0 p-2 md:p-4">
                 <div className="max-w-3xl mx-auto">
                     <ProgressBar timeLimit={timeLimit} elapsedSeconds={elapsedTime} />
                 </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center p-4 md:p-6">
+            <div className="flex-1 flex items-center justify-center">
                 <div className="w-full max-w-4xl">
                     <TypingDisplay
                         key={`${currentQuestion.id}-${completedQuestionCount}`}
@@ -264,23 +270,22 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
                 </div>
             </div>
 
-            <div className="flex-shrink-0 p-4 md:p-6 border-t border-gray-200">
+            <div className="flex-shrink-0 p-2 md:p-4 border-t border-border/70">
                 <div className="max-w-3xl mx-auto">
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div className="space-y-1">
-                            <div className="text-sm text-gray-500">正解数</div>
+                            <div className="text-sm text-muted-foreground">正解数</div>
                             <div className={`text-xl font-bold text-${accentColor}-500`}>{correctCount}</div>
                         </div>
                         <div className="space-y-1">
-                            <div className="text-sm text-gray-500">正タイプ数</div>
-                            <div className="text-xl font-bold text-gray-700">{totalInputCount}</div>
+                            <div className="text-sm text-muted-foreground">正タイプ数</div>
+                            <div className="text-xl font-bold text-foreground">{totalInputCount}</div>
                         </div>
                         <div className="space-y-1">
-                            <div className="text-sm text-gray-500">誤タイプ数</div>
+                            <div className="text-sm text-muted-foreground">誤タイプ数</div>
                             <div className="text-xl font-bold text-red-500">{errorCount}</div>
                         </div>
                     </div>
-                    <div className="text-center text-sm text-gray-400 mt-4">キーボードでタイピング</div>
                 </div>
             </div>
         </div>

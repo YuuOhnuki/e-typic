@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+
+import { DotPattern } from '@/components/magicui/dot-pattern';
+import { ModeToggle } from '@/components/theme/mode-toggle';
+import { ThemeProvider } from '@/components/theme/theme-provider';
 import './globals.css';
 
 const geistSans = Geist({
@@ -23,8 +27,21 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-            <body className="min-h-full flex flex-col">{children}</body>
+        <html lang="ja" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+            <body className="min-h-full flex flex-col relative">
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                    <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
+                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,oklch(0.98_0.03_260),transparent_45%),radial-gradient(circle_at_bottom_right,oklch(0.96_0.04_190),transparent_50%)] dark:bg-[radial-gradient(circle_at_top,oklch(0.26_0.02_260),transparent_40%),radial-gradient(circle_at_bottom_right,oklch(0.22_0.02_200),transparent_50%)]" />
+                        <div className="absolute inset-0 bg-background/45 dark:bg-background/62" />
+                        <DotPattern className="[mask-image:radial-gradient(circle_at_center,black,transparent_92%)]" cx={1.1} cy={1.1} cr={1.1} />
+                    </div>
+
+                    <div className="relative z-10 flex min-h-full flex-col">
+                        <ModeToggle />
+                        {children}
+                    </div>
+                </ThemeProvider>
+            </body>
         </html>
     );
 }

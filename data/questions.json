@@ -763,8 +763,8 @@
                 "id": "hard-017",
                 "difficulty": "hard",
                 "japanese": "温室効果ガスの排出を抑制する",
-                "romaji": "onshitsukoukgasunohaishutsuwoyokuseisuru",
-                "alternatives": ["onsitukoukgasunohaisutuwoyokuseisuru", "onshitsukoukgasunohaisutsuwoyokuseisuru"]
+                "romaji": "onshitsukoukagasunohaishutsuwoyokuseisuru",
+                "alternatives": ["onsitukoukagasunohaisyutuwoyokuseisuru", "onshitsukoukagasunohaisyutsuwoyokuseisuru"]
             },
             {
                 "id": "hard-018",
@@ -819,8 +819,8 @@
                 "id": "hard-025",
                 "difficulty": "hard",
                 "japanese": "感性と知性を磨き続ける努力",
-                "romaji": "kanseitochiseiwomigakitsuzukerudoryoku",
-                "alternatives": ["kanseitotisiewomigakitidukerudoryoku"]
+                "romaji": "kanseitochiseiwomigakitsudukerudoryoku",
+                "alternatives": ["kanseitotisiewomigakitudukerudoryoku"]
             },
             {
                 "id": "hard-026",
@@ -896,18 +896,18 @@
                 "id": "hard-036",
                 "difficulty": "hard",
                 "japanese": "客観的なデータに基づいて現状を分析する",
-                "romaji": "kyakkantekinade-tanimotozuitegenjouwobunsekisuru",
+                "romaji": "kyakkantekinade-tanimotoduitegenjouwobunsekisuru",
                 "alternatives": [
-                    "kyakkantekinade-tanimotozuitegenzyouwobunsekisuru",
-                    "kyakkantekinade-tanimotozuitegenjouwobunsekisuru"
+                    "kyakkantekinade-tanimotoduitegenzyouwobunsekisuru",
+                    "kyakkantekinade-tanimotoduitegenjouwobunsekisuru"
                 ]
             },
             {
                 "id": "hard-037",
                 "difficulty": "hard",
                 "japanese": "優先順位を整理してタスクを遂行する",
-                "romaji": "yuusenjunniwoseirishitetasukuwosuikousuru",
-                "alternatives": ["yuusenzunniwoseirisitetasukuwosuikousuru", "yuusenjunniwoseirisitetasukuwosuikousuru"]
+                "romaji": "yuusenjuniwoseirishitetasukuwosuikousuru",
+                "alternatives": ["yuusenzuniwoseirisitetasukuwosuikousuru", "yuusenjunniwoseirisitetasukuwosuikousuru"]
             },
             {
                 "id": "hard-038",
@@ -923,10 +923,10 @@
                 "id": "hard-039",
                 "difficulty": "hard",
                 "japanese": "継続的な学習が自己成長の鍵となる",
-                "romaji": "keizokutekunagakushuugajikoseichounokagitonaru",
+                "romaji": "keizokutekinagakushuugajikoseichounokagitonaru",
                 "alternatives": [
-                    "keizokutekunagakusyuugazikoseityounokagitonaru",
-                    "keizokutekunagakushuugazikoseityounokagitonaru"
+                    "keizokutekunagakisyuugazikoseityounokagitonaru",
+                    "keizokutekunagakishuugazikoseityounokagitonaru"
                 ]
             },
             {
@@ -953,8 +953,8 @@
                 "id": "hard-042",
                 "difficulty": "hard",
                 "japanese": "チーム全体の士気を高めるリーダーシップ",
-                "romaji": "chi-muzentennoshikiwotakameruri-da-shippu",
-                "alternatives": ["ti-muzentennosikiwotakameruri-da-sippu", "chi-muzentennoshikiwotakameruri-da-sippu"]
+                "romaji": "chi-muzentainoshikiwotakameruri-da-shippu",
+                "alternatives": ["ti-muzentainosikiwotakameruri-da-sippu", "chi-muzentainoshikiwotakameruri-da-sippu"]
             },
             {
                 "id": "hard-043",
@@ -1017,10 +1017,10 @@
                 "id": "hard-049",
                 "difficulty": "hard",
                 "japanese": "精神的な豊かさを追求するライフスタイル",
-                "romaji": "seishintekinayutakasawaotsuikyuusururaifusutairu",
+                "romaji": "seishintekinayutakasawotsuikyuusururaifusutairu",
                 "alternatives": [
-                    "seisintekinayutakasawaotuikyuusururaifusutairu",
-                    "seishintekinayutakasawaotsuikyuusururaifusutairu"
+                    "seisintekinayutakasawotuikyuusururaifusutairu",
+                    "seishintekinayutakasawotsuikyuusururaifusutairu"
                 ]
             },
             {
@@ -1111,10 +1111,10 @@
                 "id": "hard-059",
                 "difficulty": "hard",
                 "japanese": "倫理観を持って技術を利用する責任",
-                "romaji": "rinrikannwoomottegijutsuworiyousurusekinin",
+                "romaji": "rinrikannwomottegijutsuworiyousurusekinin",
                 "alternatives": [
-                    "rinrikannwoomottegizyutuworiyousurusekinin",
-                    "rinrikannwoomottegijutsuworiyousurusekinin"
+                    "rinrikannwomottegizyutuworiyousurusekinin",
+                    "rinrikannwomottegijutsuworiyousurusekinin"
                 ]
             },
             {

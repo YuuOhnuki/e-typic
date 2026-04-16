@@ -2,10 +2,11 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
-import { Crown } from 'lucide-react';
+import { Crown, DoorOpen, Flag, Home, LogIn, Plus, RefreshCw, Swords } from 'lucide-react';
 import { TypingDisplay } from '@/components/TypingDisplay';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Button } from '@/components/ui/button';
+import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Difficulty, Question } from '@/types/typing';
 import { GameStartedPayload, MultiplayerRoomState } from '@/types/multiplayer';
@@ -394,38 +395,50 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     if (mode === 'menu') {
         return (
             <div className="min-h-screen flex items-center justify-center px-4">
-                <div className="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-6 space-y-5">
-                    <h2 className="text-2xl font-light">マルチプレイ</h2>
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-1 grid grid-cols-2 gap-1">
-                        <button
+                <div className="surface-card w-full max-w-xl p-6 space-y-5">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-light">マルチプレイ</h2>
+                        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>サーバー</span>
+                            <span
+                                className={`size-2.5 rounded-full ${
+                                    serverOnline === null
+                                        ? 'bg-muted-foreground/50 animate-soft-pulse'
+                                        : serverOnline
+                                          ? 'bg-emerald-500'
+                                          : 'bg-red-500'
+                                }`}
+                            />
+                        </div>
+                    </div>
+                    <div className="surface-muted p-1 grid grid-cols-2 gap-1">
+                        <Button
                             type="button"
                             onClick={() => setMenuView('create')}
-                            className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                                menuView === 'create'
-                                    ? 'bg-white text-gray-900 border border-gray-200'
-                                    : 'text-gray-500'
-                            }`}
+                            variant={menuView === 'create' ? 'secondary' : 'ghost'}
+                            className="rounded-lg"
                         >
+                            <Plus className="size-4" />
                             ルーム作成
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="button"
                             onClick={() => setMenuView('join')}
-                            className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                                menuView === 'join' ? 'bg-white text-gray-900 border border-gray-200' : 'text-gray-500'
-                            }`}
+                            variant={menuView === 'join' ? 'secondary' : 'ghost'}
+                            className="rounded-lg"
                         >
+                            <LogIn className="size-4" />
                             ルーム参加
-                        </button>
+                        </Button>
                     </div>
                     {menuView === 'create' && (
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <div className="text-sm text-gray-500">プレイヤー名</div>
+                                <div className="text-sm text-muted-foreground">プレイヤー名</div>
                                 <input
                                     value={playerName}
                                     onChange={(e) => setPlayerName(e.target.value)}
-                                    className="w-full rounded border border-gray-300 px-3 py-2"
+                                    className="w-full rounded border border-border bg-background px-3 py-2"
                                     placeholder="名前を入力"
                                     maxLength={16}
                                 />
@@ -433,11 +446,11 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
                             <div className="grid gap-3 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <div className="text-sm text-gray-500">難易度</div>
+                                    <div className="text-sm text-muted-foreground">難易度</div>
                                     <select
                                         value={difficulty}
                                         onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                                        className="w-full rounded border border-gray-300 px-3 py-2"
+                                        className="w-full rounded border border-border bg-background px-3 py-2"
                                     >
                                         {difficultyOptions.map((item) => (
                                             <option key={item.key} value={item.key}>
@@ -448,8 +461,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 </div>
 
                                 <div className="space-y-2">
-                                    <div className="text-sm text-gray-500">制限時間（分）</div>
-                                    <div className="rounded-xl border border-gray-200 px-4 py-3 bg-gray-50">
+                                    <div className="text-sm text-muted-foreground">制限時間（分）</div>
+                                    <div className="surface-muted px-4 py-3">
                                         <input
                                             type="range"
                                             min={1}
@@ -457,67 +470,85 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                             step={1}
                                             value={minutes}
                                             onChange={(e) => setMinutes(clampMinutes(Number(e.target.value)))}
-                                            className="w-full accent-gray-900"
+                                            className="w-full accent-primary"
                                             aria-label="制限時間"
                                         />
-                                        <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                                        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                                             <span>1分</span>
-                                            <span className="font-semibold text-gray-800">{minutes}分</span>
+                                            <span className="font-semibold text-foreground">{minutes}分</span>
                                             <span>5分</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-2">
-                                <Button
+                            <ActionButtonRow>
+                                <ActionButton
                                     onClick={createRoom}
-                                    className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white"
+                                    icon={Plus}
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                                 >
                                     作成してロビーへ
-                                </Button>
-                                <Button onClick={onBackToHome} variant="outline" className="rounded-xl">
+                                </ActionButton>
+                                <ActionButton onClick={onBackToHome} variant="outline" icon={Home}>
                                     戻る
-                                </Button>
-                            </div>
+                                </ActionButton>
+                            </ActionButtonRow>
                         </div>
                     )}
 
                     {menuView === 'join' && (
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <div className="text-sm text-gray-500">プレイヤー名</div>
+                                <div className="text-sm text-muted-foreground">プレイヤー名</div>
                                 <input
                                     value={playerName}
                                     onChange={(e) => setPlayerName(e.target.value)}
-                                    className="w-full rounded border border-gray-300 px-3 py-2"
+                                    className="w-full rounded border border-border bg-background px-3 py-2"
                                     placeholder="名前を入力"
                                     maxLength={16}
                                 />
                             </div>
                             <div className="space-y-2">
-                                <div className="text-sm text-gray-500">3桁ルームコード</div>
+                                <div className="text-sm text-muted-foreground">3桁ルームコード</div>
                                 <div className="flex justify-center">
-                                    <InputOTP maxLength={3} value={roomCodeInput} onChange={setRoomCodeInput}>
-                                        <InputOTPGroup>
-                                            <InputOTPSlot index={0} />
-                                            <InputOTPSlot index={1} />
-                                            <InputOTPSlot index={2} />
+                                    <InputOTP
+                                        maxLength={3}
+                                        value={roomCodeInput}
+                                        onChange={(value) => setRoomCodeInput(normalizeRoomCode(value))}
+                                        className="justify-center"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                    >
+                                        <InputOTPGroup className="gap-2">
+                                            <InputOTPSlot
+                                                index={0}
+                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm first:border-l"
+                                            />
+                                            <InputOTPSlot
+                                                index={1}
+                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm"
+                                            />
+                                            <InputOTPSlot
+                                                index={2}
+                                                className="h-12 w-12 rounded-md border border-border/90 bg-card/95 text-xl font-semibold shadow-sm"
+                                            />
                                         </InputOTPGroup>
                                     </InputOTP>
                                 </div>
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <Button
+                            <ActionButtonRow>
+                                <ActionButton
                                     onClick={joinRoom}
-                                    className="w-full rounded-xl bg-gray-900 hover:bg-gray-800 text-white"
+                                    icon={DoorOpen}
+                                    className="bg-primary text-primary-foreground hover:bg-primary/90"
                                 >
                                     入室
-                                </Button>
-                                <Button onClick={onBackToHome} variant="outline" className="rounded-xl">
+                                </ActionButton>
+                                <ActionButton onClick={onBackToHome} variant="outline" icon={Home}>
                                     戻る
-                                </Button>
-                            </div>
+                                </ActionButton>
+                            </ActionButtonRow>
                         </div>
                     )}
                     {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
@@ -529,27 +560,27 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     if (mode === 'lobby') {
         return (
             <div className="min-h-screen p-6">
-                <div className="max-w-3xl mx-auto rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+                <div className="surface-card max-w-3xl mx-auto p-6 space-y-5 animate-fade-up-soft">
                     <div className="flex items-center justify-between">
                         <h2 className="text-2xl font-light">ルーム待機中</h2>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                             ルームコード:
                             <span className="ml-2 font-semibold text-xl tracking-widest">{currentRoomCode}</span>
                         </div>
                     </div>
 
-                    <div className="text-sm text-gray-600">
+                    <div className="text-sm text-muted-foreground">
                         {isHost ? 'あなたはホストです。全員が揃ったらレース開始。' : 'ホストの開始を待っています。'}
                     </div>
 
                     <div className="space-y-2">
-                        <div className="text-sm text-gray-500">参加者 ({ranking.length})</div>
+                        <div className="text-sm text-muted-foreground">参加者 ({ranking.length})</div>
                         <div className="max-h-64 overflow-y-auto space-y-2">
                             {ranking.map((player, idx) => (
                                 <div
                                     key={player.playerId}
-                                    className={`rounded border border-gray-200 px-3 py-2 flex justify-between ${
-                                        player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                    className={`rounded border border-border px-3 py-2 flex justify-between ${
+                                        player.playerId === playerId ? 'bg-blue-500/10 border-blue-500/40' : ''
                                     }`}
                                 >
                                     <div className="flex items-center">
@@ -577,7 +608,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                             </span>
                                         )}
                                     </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="text-xs text-muted-foreground">
                                         {player.isCompleted ? '完了' : '待機中'}
                                     </div>
                                 </div>
@@ -585,15 +616,15 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
-                        <div className="text-sm text-gray-500">ロビー設定</div>
+                    <div className="surface-muted p-4 space-y-3">
+                        <div className="text-sm text-muted-foreground">ロビー設定</div>
                         <div className="grid gap-3 md:grid-cols-2">
                             <div className="space-y-2">
-                                <div className="text-xs text-gray-500">難易度</div>
+                                <div className="text-xs text-muted-foreground">難易度</div>
                                 <select
                                     value={difficulty}
                                     onChange={(e) => setDifficulty(e.target.value as Difficulty)}
-                                    className="w-full rounded border border-gray-300 px-3 py-2 disabled:bg-gray-100"
+                                    className="w-full rounded border border-border bg-background px-3 py-2 disabled:bg-muted"
                                     disabled={!isHost}
                                 >
                                     {difficultyOptions.map((item) => (
@@ -604,8 +635,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                 </select>
                             </div>
                             <div className="space-y-2">
-                                <div className="text-xs text-gray-500">制限時間（分）</div>
-                                <div className="rounded-xl border border-gray-200 px-4 py-3 bg-white">
+                                <div className="text-xs text-muted-foreground">制限時間（分）</div>
+                                <div className="rounded-xl border border-border px-4 py-3 bg-background/70">
                                     <input
                                         type="range"
                                         min={1}
@@ -613,37 +644,41 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                         step={1}
                                         value={minutes}
                                         onChange={(e) => setMinutes(clampMinutes(Number(e.target.value)))}
-                                        className="w-full accent-gray-900 disabled:opacity-40"
+                                        className="w-full accent-primary disabled:opacity-40"
                                         aria-label="制限時間"
                                         disabled={!isHost}
                                     />
-                                    <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                                         <span>1分</span>
-                                        <span className="font-semibold text-gray-800">{minutes}分</span>
+                                        <span className="font-semibold text-foreground">{minutes}分</span>
                                         <span>5分</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         {isHost ? (
-                            <Button onClick={updateLobbySettings} variant="outline" className="w-full rounded-xl">
+                            <ActionButton onClick={updateLobbySettings} variant="outline" icon={RefreshCw}>
                                 設定を反映
-                            </Button>
+                            </ActionButton>
                         ) : (
-                            <div className="text-xs text-gray-500">設定変更はホストのみ可能です。</div>
+                            <div className="text-xs text-muted-foreground">設定変更はホストのみ可能です。</div>
                         )}
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
+                    <ActionButtonRow cols={2}>
                         {isHost && (
-                            <Button onClick={startRace} className="rounded-xl bg-gray-900 hover:bg-gray-800 text-white">
+                            <ActionButton
+                                onClick={startRace}
+                                icon={Flag}
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            >
                                 レース開始
-                            </Button>
+                            </ActionButton>
                         )}
-                        <Button onClick={onBackToHome} variant="outline" className="rounded-xl">
+                        <ActionButton onClick={onBackToHome} variant="outline" icon={Home}>
                             ホームへ
-                        </Button>
-                    </div>
+                        </ActionButton>
+                    </ActionButtonRow>
                     {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
                 </div>
             </div>
@@ -652,25 +687,25 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
     if (mode === 'playing' && question) {
         return (
-            <div className="min-h-screen bg-white p-4 md:p-8">
+            <div className="min-h-screen p-4 md:p-8 animate-fade-up-soft">
                 <div className="max-w-5xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <div>
                             <h2 className="text-3xl font-light">マルチプレイレース</h2>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm text-muted-foreground">
                                 ルームコード:
                                 <span className="ml-2 font-semibold text-xl tracking-widest">{currentRoomCode}</span>
                             </div>
                         </div>
-                        <Button onClick={onBackToHome} variant="outline" className="rounded-xl">
+                        <ActionButton onClick={onBackToHome} variant="outline" className="w-auto" icon={Home}>
                             退出
-                        </Button>
+                        </ActionButton>
                     </div>
 
                     <ProgressBar timeLimit={timeLimit} elapsedSeconds={elapsedTime} />
 
                     <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
-                        <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                        <div className="surface-muted p-5">
                             <TypingDisplay
                                 key={`${question.id}-${completedQuestionCount}`}
                                 japanese={question.japanese}
@@ -683,14 +718,14 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             />
                         </div>
 
-                        <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-                            <div className="text-sm text-gray-500">リアルタイム進捗 ({ranking.length})</div>
+                        <div className="surface-card p-4 space-y-3">
+                            <div className="text-sm text-muted-foreground">リアルタイム進捗 ({ranking.length})</div>
                             <div className="max-h-96 overflow-y-auto space-y-3">
                                 {ranking.map((player, idx) => (
                                     <div
                                         key={player.playerId}
-                                        className={`rounded border border-gray-200 p-3 space-y-1 ${
-                                            player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                        className={`rounded border border-border p-3 space-y-1 ${
+                                            player.playerId === playerId ? 'bg-blue-500/10 border-blue-500/40' : ''
                                         }`}
                                     >
                                         <div className="flex justify-between text-sm">
@@ -715,19 +750,19 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                                     </span>
                                                 )}
                                             </span>
-                                            <span className="text-gray-500">
+                                            <span className="text-muted-foreground">
                                                 {player.isCompleted ? '完了' : '進行中'}
                                             </span>
                                         </div>
-                                        <div className="h-2 rounded bg-gray-100 overflow-hidden">
+                                        <div className="h-2 rounded bg-muted overflow-hidden">
                                             <div
-                                                className="h-full bg-gray-700 transition-all duration-200"
+                                                className="h-full bg-foreground/80 transition-all duration-200"
                                                 style={{
                                                     width: `${Math.min((player.currentCharIndex / progressMax) * 100, 100)}%`,
                                                 }}
                                             />
                                         </div>
-                                        <div className="text-xs text-gray-500">
+                                        <div className="text-xs text-muted-foreground">
                                             文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
                                         </div>
                                     </div>
@@ -741,17 +776,17 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     }
 
     return (
-        <div className="min-h-screen flex items-center justify-center px-4">
-            <div className="w-full max-w-xl rounded-xl border border-gray-200 bg-white p-6 space-y-4">
+        <div className="min-h-screen flex items-center justify-center px-4 animate-fade-up-soft">
+            <div className="surface-card w-full max-w-xl p-6 space-y-4">
                 <h2 className="text-2xl font-light">レース結果</h2>
                 <div className="space-y-2">
-                    <div className="text-sm text-gray-500">ランキング ({ranking.length})</div>
+                    <div className="text-sm text-muted-foreground">ランキング ({ranking.length})</div>
                     <div className="max-h-64 overflow-y-auto space-y-2">
                         {ranking.map((player, index) => (
                             <div
                                 key={player.playerId}
-                                className={`rounded border border-gray-200 px-3 py-2 flex justify-between ${
-                                    player.playerId === playerId ? 'bg-blue-50 border-blue-300' : ''
+                                className={`rounded border border-border px-3 py-2 flex justify-between ${
+                                    player.playerId === playerId ? 'bg-blue-500/10 border-blue-500/40' : ''
                                 }`}
                             >
                                 <div className="flex items-center">
@@ -773,7 +808,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                         <span className="ml-2 text-xs text-blue-600 bg-blue-100 px-1 rounded">YOU</span>
                                     )}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-muted-foreground">
                                     文字数: {player.currentCharIndex} / 正解率: {player.correctRate.toFixed(1)}%
                                 </div>
                             </div>
@@ -782,9 +817,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 </div>
 
                 {myResult && (
-                    <div className="rounded-xl border-2 border-blue-300 bg-blue-50 p-4 space-y-2">
-                        <div className="text-sm font-semibold text-blue-700">あなたの成績</div>
-                        <div className="grid grid-cols-2 gap-2 text-sm text-gray-700">
+                    <div className="rounded-xl border-2 border-blue-500/40 bg-blue-500/10 p-4 space-y-2">
+                        <div className="text-sm font-semibold text-blue-700 dark:text-blue-300">あなたの成績</div>
+                        <div className="grid grid-cols-2 gap-2 text-sm text-foreground/90">
                             <div>正タイプ数: {myResult.totalInputCount}</div>
                             <div>誤タイプ数: {myResult.errorCount}</div>
                             <div>正解率: {myResult.correctRate.toFixed(1)}%</div>
@@ -793,11 +828,15 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
-                    <Button onClick={onBackToHome} className="rounded-xl bg-gray-900 hover:bg-gray-800 text-white">
+                <ActionButtonRow cols={2}>
+                    <ActionButton
+                        onClick={onBackToHome}
+                        icon={Home}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    >
                         ホームに戻る
-                    </Button>
-                    <Button
+                    </ActionButton>
+                    <ActionButton
                         onClick={() => {
                             setStayInRoom(true);
                             if (isHost) {
@@ -805,13 +844,13 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             }
                         }}
                         variant="outline"
-                        className="rounded-xl"
+                        icon={Swords}
                     >
                         ロビーに残る
-                    </Button>
-                </div>
+                    </ActionButton>
+                </ActionButtonRow>
                 {!isHost && stayInRoom && (
-                    <div className="text-xs text-gray-500">ホストがロビーを開くまで待機します。</div>
+                    <div className="text-xs text-muted-foreground">ホストがロビーを開くまで待機します。</div>
                 )}
             </div>
         </div>

@@ -18,10 +18,10 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ timeLimit, elapsedSeco
     return (
         <div className="w-full space-y-2">
             <div className="flex justify-between items-center">
-                <div className="text-sm font-medium text-gray-600">残り時間</div>
+                <div className="text-sm font-medium text-muted-foreground">残り時間</div>
                 <div
                     className={`text-lg font-mono font-bold tabular-nums ${
-                        isWarning ? 'text-red-500' : 'text-gray-700'
+                        isWarning ? 'text-red-500 animate-soft-pulse' : 'text-foreground'
                     }`}
                 >
                     {String(Math.floor(remainingSeconds / 60)).padStart(2, '0')}:
@@ -29,7 +29,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({ timeLimit, elapsedSeco
                 </div>
             </div>
 
-            <Progress value={progress} className={isWarning ? 'bg-red-100' : ''} />
+            <Progress value={progress} className={isWarning ? 'bg-red-500/15' : ''} />
 
             {isTimeUp && (
                 <div className="text-center mt-4">

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { InputState } from '@/types/typing';
+import { createTypingSoundPlayer } from '@/lib/typing-audio';
 import { romajiEngine } from '@/utils/romajiEngine';
 
 interface TypingDisplayProps {
@@ -30,6 +31,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
     const [lastError, setLastError] = useState<boolean>(false);
 
     const inputRef = useRef<HTMLInputElement>(null);
+    const soundPlayerRef = useRef(createTypingSoundPlayer());
 
     const accentColorMap: Record<string, string> = {
         emerald: '#10b981',
@@ -84,6 +86,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                 const hasExactMatch = matchedCandidate === nextTyped;
 
                 if (hasPrefixMatch) {
+                    soundPlayerRef.current.playKey();
                     setTypedHistory((prev) => [...prev, { char: inputChar, correct: true }]);
                     const activeCandidateLength = matchedCandidate?.length ?? targetText.length;
                     const nextJapaneseIndex = hasExplicitRomaji
@@ -109,6 +112,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                         onComplete?.();
                     }
                 } else {
+                    soundPlayerRef.current.playError();
                     setTypedHistory((prev) => [...prev, { char: inputChar, correct: false }]);
                     setLastError(true);
                     onError?.(japaneseProgress);
@@ -156,7 +160,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
 
     return (
         <div
-            className="w-full max-w-2xl mx-auto px-4 py-8 focus-within:outline-none cursor-text"
+            className="w-full max-w-2xl mx-auto px-4 py-8 focus-within:outline-none cursor-text animate-fade-up-soft"
             onClick={handleContainerClick}
         >
             <div className="text-center mb-12">
@@ -165,8 +169,8 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                         <span
                             key={index}
                             className={`inline-block transition-all duration-200 px-1 rounded ${
-                                isCorrect ? 'bg-emerald-50 text-gray-900' : 'text-gray-900'
-                            } ${isCurrent && !isCorrect ? 'font-semibold underline underline-offset-8' : ''}`}
+                                isCorrect ? 'bg-emerald-500/15 text-foreground' : 'text-foreground'
+                            } ${isCurrent && !isCorrect ? 'font-semibold underline underline-offset-8 animate-soft-pop' : ''}`}
                             style={{
                                 marginRight: '0.25em',
                                 color: isCurrent && !isCorrect ? accentColorHex : undefined,
@@ -179,8 +183,8 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             </div>
 
             <div className="text-center mb-8 min-h-12 flex flex-col items-center justify-center space-y-3">
-                <div className="text-sm text-gray-500 uppercase tracking-[0.25em]">ローマ字全文</div>
-                <div className="text-2xl font-mono tracking-widest text-gray-700 break-words">
+                <div className="text-sm text-muted-foreground uppercase tracking-[0.25em]">ローマ字全文</div>
+                <div className="text-2xl font-mono tracking-widest text-foreground break-words">
                     {romajiTarget.split('').map((char: string, idx: number) => {
                         const isCompleted = idx < completedRomaji.length;
                         const isCurrent = idx === completedRomaji.length;
@@ -189,9 +193,8 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                             <span
                                 key={idx}
                                 className={`inline-block mr-1 transition-colors duration-200 px-0.5 rounded ${
-                                    isCompleted ? 'bg-emerald-50 text-gray-900' : 'text-gray-800'
-                                } ${isCurrent ? 'font-semibold underline underline-offset-4' : ''}
-                                }`}
+                                    isCompleted ? 'bg-emerald-500/15 text-foreground' : 'text-foreground/90'
+                                } ${isCurrent ? 'font-semibold underline underline-offset-4' : ''}`}
                                 style={{ color: isCurrent ? accentColorHex : undefined }}
                             >
                                 {char}
@@ -202,12 +205,12 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             </div>
 
             <div className="text-center mb-8 min-h-10">
-                <div className={`text-lg font-mono tracking-wider ${lastError ? 'text-red-500' : 'text-gray-500'}`}>
+                <div className={`text-lg font-mono tracking-wider ${lastError ? 'text-red-500' : 'text-muted-foreground'}`}>
                     {typedHistory.length > 0 ? (
                         typedHistory.slice(-20).map((item, idx: number) => (
                             <span
                                 key={`${item.char}-${idx}`}
-                                className={`inline-block mr-1 px-2 py-1 rounded border ${
+                                className={`inline-block mr-1 px-2 py-1 rounded border transition-transform duration-150 ${
                                     item.correct
                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                         : 'bg-red-50 text-red-600 border-red-200'
@@ -218,7 +221,7 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
                         ))
                     ) : userInput ? (
                         userInput.split('').map((char: string, idx: number) => (
-                            <span key={idx} className="inline-block mr-1 px-1 py-0.5 rounded bg-gray-100 text-black">
+                            <span key={idx} className="inline-block mr-1 px-1 py-0.5 rounded bg-muted text-foreground">
                                 {char}
                             </span>
                         ))
@@ -229,15 +232,15 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
             </div>
 
             <div className="text-center mb-6">
-                <div className="text-sm text-gray-500 tabular-nums">
+                <div className="text-sm text-muted-foreground tabular-nums">
                     {typedRomaji.length} / {targetText.length}
                 </div>
-                <div className="mt-2 w-full bg-gray-200 rounded-full h-1 overflow-hidden">
+                <div className="mt-2 w-full bg-muted rounded-full h-1 overflow-hidden">
                     <div
                         className="h-full transition-all duration-300"
                         style={{
                             width: `${(typedRomaji.length / Math.max(romajiTarget.length, 1)) * 100}%`,
-                            backgroundColor: accentColor,
+                            backgroundColor: accentColorHex,
                         }}
                     />
                 </div>
@@ -256,14 +259,14 @@ export const TypingDisplay: React.FC<TypingDisplayProps> = ({
 
             {typedRomaji.length >= romajiTarget.length && (
                 <div className="text-center mt-12">
-                    <div className="text-2xl font-light" style={{ color: accentColor }}>
+                    <div className="text-2xl font-light" style={{ color: accentColorHex }}>
                         完了！
                     </div>
                 </div>
             )}
 
             {lastError && (
-                <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded animate-pulse">
+                <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded shadow-sm animate-soft-shake">
                     誤字。もう一度入力してください。
                 </div>
             )}

@@ -1,7 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { ChevronLeft, Clock3, Crown, Swords, UserRound } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+
+import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
 import { Difficulty } from '@/types/typing';
 
 interface HomeScreenProps {
@@ -20,10 +23,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
     const [selectedMinutes, setSelectedMinutes] = React.useState<number>(1);
     const [isServerOnline, setIsServerOnline] = React.useState<boolean | null>(null);
 
-    const difficultyOptions: { key: Difficulty; label: string; description: string }[] = [
-        { key: 'easy', label: '初級', description: '単語中心' },
-        { key: 'medium', label: '中級', description: '文をテンポ良く' },
-        { key: 'hard', label: '上級', description: '長文チャレンジ' },
+    const difficultyOptions: { key: Difficulty; label: string; description: string; icon: LucideIcon }[] = [
+        { key: 'easy', label: '初級', description: '単語中心', icon: UserRound },
+        { key: 'medium', label: '中級', description: '文をテンポ良く', icon: Swords },
+        { key: 'hard', label: '上級', description: '長文チャレンジ', icon: Crown },
     ];
 
     React.useEffect(() => {
@@ -54,38 +57,45 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
     }, []);
 
     return (
-        <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+        <div className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden animate-fade-up-soft">
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute left-1/2 top-12 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-400/10 blur-3xl animate-float-soft" />
+                <div
+                    className="absolute bottom-8 right-[12%] h-56 w-56 rounded-full bg-sky-400/10 blur-3xl animate-float-soft"
+                    style={{ animationDelay: '1.4s' }}
+                />
+            </div>
+
             {/* ロゴ/タイトル */}
-            <div className="text-center mb-16 space-y-4">
+            <div className="relative text-center mb-16 space-y-4">
                 <div className="text-7xl md:text-8xl font-light tracking-wider">DOJO</div>
-                <div className="text-gray-500 text-sm tracking-widest">TYPING PRACTICE</div>
+                <div className="text-muted-foreground text-sm tracking-widest">TYPING PRACTICE</div>
             </div>
 
             {/* ボタングループ */}
-            <div className="space-y-4 w-full max-w-sm">
+            <div className="relative space-y-4 w-full max-w-sm">
                 {!showDifficultySelect ? (
-                    <div className="space-y-3">
-                        <Button
+                    <ActionButtonRow>
+                        <ActionButton
                             onClick={() => setShowDifficultySelect(true)}
-                            className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold rounded-xl"
-                            size="lg"
+                            icon={UserRound}
+                            className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                             シングルプレイ
-                        </Button>
-                        <Button
+                        </ActionButton>
+                        <ActionButton
                             onClick={onSelectMultiPlay}
                             variant="outline"
-                            className="w-full border-gray-300 text-gray-800 hover:bg-gray-100 rounded-xl"
-                            size="lg"
+                            icon={Swords}
                         >
                             マルチプレイ
-                        </Button>
-                    </div>
+                        </ActionButton>
+                    </ActionButtonRow>
                 ) : (
                     <div className="space-y-3">
-                        <div className="text-center text-sm tracking-wide text-gray-500">難易度を選択</div>
+                        <div className="text-center text-sm tracking-wide text-muted-foreground">難易度を選択</div>
                         <div className="space-y-2">
-                            <div className="rounded-xl border border-gray-200 px-4 py-3 bg-gray-50">
+                            <div className="surface-muted px-4 py-3">
                                 <input
                                     type="range"
                                     min={1}
@@ -93,45 +103,46 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onSelectSinglePlay, onSe
                                     step={1}
                                     value={selectedMinutes}
                                     onChange={(e) => setSelectedMinutes(Number(e.target.value))}
-                                    className="w-full accent-gray-900"
+                                    className="w-full accent-primary"
                                     aria-label="プレイ時間"
                                 />
-                                <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
+                                <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                                     <span>1分</span>
-                                    <span className="font-semibold text-gray-800">{selectedMinutes}分</span>
+                                    <span className="inline-flex items-center gap-1 font-semibold text-foreground">
+                                        <Clock3 className="size-3.5" />
+                                        {selectedMinutes}分
+                                    </span>
                                     <span>5分</span>
                                 </div>
                             </div>
                         </div>
                         {difficultyOptions.map((option) => (
-                            <Button
+                            <ActionButton
                                 key={option.key}
                                 onClick={() => onSelectSinglePlay(option.key, selectedMinutes)}
                                 variant="outline"
-                                className="w-full border-gray-300 text-gray-800 hover:bg-gray-100 rounded-xl"
-                                size="lg"
+                                icon={option.icon}
                             >
                                 <span className="font-semibold text-xl">{option.label}</span>
-                            </Button>
+                            </ActionButton>
                         ))}
-                        <Button
+                        <ActionButton
                             onClick={() => setShowDifficultySelect(false)}
                             variant="ghost"
-                            className="w-full text-gray-600 rounded-xl"
-                            size="lg"
+                            icon={ChevronLeft}
                         >
                             戻る
-                        </Button>
+                        </ActionButton>
                     </div>
                 )}
             </div>
 
             {/* フッター */}
-            <div className="absolute bottom-6 text-center text-gray-400 text-lg">
+            <div className="absolute bottom-6 text-center text-muted-foreground/80 text-lg animate-soft-pulse">
                 <p>&copy; Yuu</p>
             </div>
 
-            <div className="absolute bottom-6 right-6 text-right text-lg text-gray-600">
+            <div className="absolute bottom-6 right-6 text-right text-lg text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <span className="font-medium">マルチサーバー</span>
                     <span className={`inline-block w-3 h-3 rounded-full ${
