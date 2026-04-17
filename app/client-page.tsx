@@ -17,10 +17,12 @@ interface ClientPageProps {
 
 export const ClientPage: React.FC<ClientPageProps> = ({ appVersion }) => {
     const { currentScreen, setScreen, setDifficulty, setGameDurationMinutes } = useGameStore();
+    const [showDifficultySelectOnHome, setShowDifficultySelectOnHome] = React.useState(false);
 
     const handleSelectSinglePlay = (difficulty: Difficulty, minutes: number) => {
         setDifficulty(difficulty);
         setGameDurationMinutes(minutes);
+        setShowDifficultySelectOnHome(false);
         setScreen('single');
     };
 
@@ -33,6 +35,12 @@ export const ClientPage: React.FC<ClientPageProps> = ({ appVersion }) => {
     };
 
     const handleBackToHome = () => {
+        setShowDifficultySelectOnHome(false);
+        setScreen('home');
+    };
+
+    const handleBackToDifficultySelect = () => {
+        setShowDifficultySelectOnHome(true);
         setScreen('home');
     };
 
@@ -44,10 +52,14 @@ export const ClientPage: React.FC<ClientPageProps> = ({ appVersion }) => {
                     onSelectMultiPlay={handleSelectMultiPlay}
                     onSelectLeaderboard={handleSelectLeaderboard}
                     appVersion={appVersion}
+                    initialShowDifficultySelect={showDifficultySelectOnHome}
+                    onExitDifficultySelect={() => setShowDifficultySelectOnHome(false)}
                 />
             )}
 
-            {currentScreen === 'single' && <SinglePlayScreen onBackToHome={handleBackToHome} />}
+            {currentScreen === 'single' && (
+                <SinglePlayScreen onBackToHome={handleBackToHome} onBackToDifficultySelect={handleBackToDifficultySelect} />
+            )}
 
             {currentScreen === 'multi' && <MultiPlayScreen onBackToHome={handleBackToHome} />}
 

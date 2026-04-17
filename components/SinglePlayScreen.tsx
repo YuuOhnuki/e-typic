@@ -34,7 +34,10 @@ type QuestionDifficulty = Exclude<Difficulty, 'survival'>;
 /**
  * シングルプレイ画面コンポーネント
  */
-export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBackToHome }) => {
+export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDifficultySelect?: () => void }> = ({
+    onBackToHome,
+    onBackToDifficultySelect,
+}) => {
     // ゲーム状態
     const { isPlaying, isPaused, difficulty, gameDurationMinutes, currentSession, startGame, endGame, resetGame } =
         useGameStore();
@@ -457,8 +460,12 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBa
         setIsPlayerNameSaved(false);
         setSavePlayerNameError('');
         setCurrentQuestion(null);
+        if (onBackToDifficultySelect) {
+            onBackToDifficultySelect();
+            return;
+        }
         onBackToHome?.();
-    }, [resetGame, onBackToHome]);
+    }, [onBackToDifficultySelect, onBackToHome, resetGame]);
 
     /**
      * 経過時間更新

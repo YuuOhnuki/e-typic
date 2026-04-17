@@ -6,10 +6,13 @@ import { createClient } from '@libsql/client';
 
 const PORT = Number(process.env.PORT ?? process.env.MULTIPLAYER_PORT ?? 4001);
 const CLIENT_ORIGIN = process.env.NEXT_PUBLIC_APP_ORIGIN ?? 'http://localhost:3000';
-const MAX_PLAYERS_PER_ROOM = 12;
+const MAX_PLAYERS_PER_ROOM = 20;
+const MIN_PLAYERS_PER_ROOM = 2;
 const MINUTES_MIN = 1;
 const MINUTES_MAX = 5;
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
+const ALLOWED_TEAM_MODES = new Set(['free', 'two-teams']);
+const ALLOWED_SCORE_MODES = new Set(['correct-count', 'correct-rate', 'completed-questions', 'kpm']);
 
 function loadLocalEnv() {
     const envPath = path.join(process.cwd(), '.env');
@@ -104,10 +107,13 @@ const questionsData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
  *   playerId: string;
  *   socketId: string;
  *   name: string;
+ *   isReady: boolean;
+ *   teamId: 'A' | 'B' | null;
  *   currentCharIndex: number;
  *   correctCount: number;
  *   errorCount: number;
  *   totalInputCount: number;
+ *   completedQuestionCount: number;
  *   isCompleted: boolean;
  *   elapsedTime: number;
  *   finishedAt: number | null;
@@ -119,9 +125,15 @@ const questionsData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
 /**
  * @typedef {{
  *   code: string;
+ *   roomName: string;
  *   hostPlayerId: string;
  *   difficulty: 'easy' | 'medium' | 'hard';
  *   minutes: number;
+ *   maxPlayers: number;
+ *   isPublic: boolean;
+ *   autoStart: boolean;
+ *   teamMode: 'free' | 'two-teams';
+ *   scoreMode: 'correct-count' | 'correct-rate' | 'completed-questions' | 'kpm';
  *   status: 'waiting' | 'playing' | 'finished';
  *   question: { id: string; difficulty: string; japanese: string; romaji: string; alternatives?: string[] };
  *   startedAt: number | null;
@@ -175,6 +187,27 @@ function makeRoomCode() {
     return String(Math.floor(Math.random() * 1000)).padStart(3, '0');
 }
 
+const ROOM_NAME_ADJECTIVES = [
+    'Swift',
+    'Bold',
+    'Rapid',
+    'Neon',
+    'Sunny',
+    'Sharp',
+    'Brisk',
+    'Glide',
+    'Flash',
+    'Vivid',
+];
+const ROOM_NAME_NOUNS = ['Falcons', 'Racers', 'Typers', 'Comets', 'Ninjas', 'Rockets', 'Wolves', 'Waves'];
+
+function makeRoomName() {
+    const adjective = ROOM_NAME_ADJECTIVES[Math.floor(Math.random() * ROOM_NAME_ADJECTIVES.length)];
+    const noun = ROOM_NAME_NOUNS[Math.floor(Math.random() * ROOM_NAME_NOUNS.length)];
+    const suffix = Math.floor(Math.random() * 900 + 100);
+    return `${adjective} ${noun} ${suffix}`;
+}
+
 /**
  * プレイヤー名をサニタイズして、UI崩れや制御文字混入を防ぐ。
  * @param {unknown} value
@@ -226,6 +259,53 @@ function normalizeMinutes(value) {
 }
 
 /**
+ * 最大人数を許可範囲へ丸める。
+ * @param {unknown} value
+ * @returns {number}
+ */
+function normalizeMaxPlayers(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 6;
+    const rounded = Math.round(numeric);
+    return Math.min(Math.max(rounded, MIN_PLAYERS_PER_ROOM), MAX_PLAYERS_PER_ROOM);
+}
+
+/**
+ * 公開設定を boolean に正規化する。
+ * @param {unknown} value
+ * @param {boolean} fallback
+ * @returns {boolean}
+ */
+function normalizeBoolean(value, fallback = false) {
+    if (typeof value === 'boolean') return value;
+    return fallback;
+}
+
+/**
+ * チームモードをホワイトリスト検証する。
+ * @param {unknown} value
+ * @returns {'free' | 'two-teams'}
+ */
+function normalizeTeamMode(value) {
+    if (typeof value === 'string' && ALLOWED_TEAM_MODES.has(value)) {
+        return /** @type {'free' | 'two-teams'} */ (value);
+    }
+    return 'free';
+}
+
+/**
+ * 対戦方式をホワイトリスト検証する。
+ * @param {unknown} value
+ * @returns {'correct-count' | 'correct-rate' | 'completed-questions' | 'kpm'}
+ */
+function normalizeScoreMode(value) {
+    if (typeof value === 'string' && ALLOWED_SCORE_MODES.has(value)) {
+        return /** @type {'correct-count' | 'correct-rate' | 'completed-questions' | 'kpm'} */ (value);
+    }
+    return 'correct-count';
+}
+
+/**
  * 進捗カウンタを 0 以上の整数へ丸める。
  * @param {unknown} value
  * @returns {number}
@@ -266,10 +346,12 @@ function pickQuestion(difficulty) {
 }
 
 function resetPlayerStatus(player) {
+    player.isReady = false;
     player.currentCharIndex = 0;
     player.correctCount = 0;
     player.errorCount = 0;
     player.totalInputCount = 0;
+    player.completedQuestionCount = 0;
     player.isCompleted = false;
     player.elapsedTime = 0;
     player.finishedAt = null;
@@ -277,16 +359,91 @@ function resetPlayerStatus(player) {
     player.persistedToDb = false;
 }
 
-function toPublicPlayer(player) {
+function assignTeamsForRoom(room) {
+    const players = Array.from(room.players.values());
+    if (room.teamMode === 'free') {
+        players.forEach((player) => {
+            player.teamId = null;
+        });
+        return;
+    }
+
+    players.forEach((player, index) => {
+        player.teamId = index % 2 === 0 ? 'A' : 'B';
+    });
+}
+
+function getPlayerCorrectRate(player) {
     const totalAttemptCount = player.totalInputCount + player.errorCount;
-    const correctRate = totalAttemptCount > 0 ? (player.correctCount / totalAttemptCount) * 100 : 0;
+    return totalAttemptCount > 0 ? (player.correctCount / totalAttemptCount) * 100 : 0;
+}
+
+function getPlayerKpm(player) {
+    return player.elapsedTime > 0 ? player.totalInputCount / (player.elapsedTime / 60000) : 0;
+}
+
+function getPlayerScoreValue(room, player) {
+    if (room.scoreMode === 'correct-rate') return getPlayerCorrectRate(player);
+    if (room.scoreMode === 'completed-questions') return player.completedQuestionCount;
+    if (room.scoreMode === 'kpm') return getPlayerKpm(player);
+    return player.correctCount;
+}
+
+function getTeamScoreValue(room, teamId) {
+    const members = Array.from(room.players.values()).filter((player) => player.teamId === teamId);
+    if (members.length === 0) return 0;
+    const totalScore = members.reduce((sum, player) => sum + getPlayerScoreValue(room, player), 0);
+    return totalScore / members.length;
+}
+
+function comparePlayersByCompetition(room, left, right) {
+    if (room.teamMode === 'two-teams') {
+        const leftTeamScore = getTeamScoreValue(room, left.teamId);
+        const rightTeamScore = getTeamScoreValue(room, right.teamId);
+        if (rightTeamScore !== leftTeamScore) return rightTeamScore - leftTeamScore;
+        if (left.teamId !== right.teamId) return (left.teamId ?? 'B').localeCompare(right.teamId ?? 'B');
+    } else {
+        const leftScore = getPlayerScoreValue(room, left);
+        const rightScore = getPlayerScoreValue(room, right);
+        if (rightScore !== leftScore) return rightScore - leftScore;
+    }
+
+    if (left.correctCount !== right.correctCount) return right.correctCount - left.correctCount;
+    if (left.totalInputCount !== right.totalInputCount) return right.totalInputCount - left.totalInputCount;
+    if (left.errorCount !== right.errorCount) return left.errorCount - right.errorCount;
+    return (left.finishedAt ?? Infinity) - (right.finishedAt ?? Infinity);
+}
+
+function sortPlayersByCompetition(room) {
+    return [...room.players.values()].sort((left, right) => comparePlayersByCompetition(room, left, right));
+}
+
+function getCompetitionRank(room, playerId) {
+    const sorted = sortPlayersByCompetition(room);
+    if (room.teamMode === 'two-teams') {
+        const player = room.players.get(playerId);
+        if (!player) return null;
+        const teams = Array.from(new Set(sorted.map((item) => item.teamId).filter(Boolean)));
+        const teamIndex = teams.findIndex((teamId) => teamId === player.teamId);
+        return teamIndex >= 0 ? teamIndex + 1 : null;
+    }
+
+    const index = sorted.findIndex((player) => player.playerId === playerId);
+    return index >= 0 ? index + 1 : null;
+}
+
+function toPublicPlayer(player) {
+    const correctRate = getPlayerCorrectRate(player);
     return {
         playerId: player.playerId,
         name: player.name,
+        isReady: player.isReady,
+        teamId: player.teamId,
         currentCharIndex: player.currentCharIndex,
         correctCount: player.correctCount,
         errorCount: player.errorCount,
         totalInputCount: player.totalInputCount,
+        completedQuestionCount: player.completedQuestionCount,
         correctRate,
         isCompleted: player.isCompleted,
         elapsedTime: player.elapsedTime,
@@ -295,19 +452,25 @@ function toPublicPlayer(player) {
     };
 }
 
-function sortPlayersByRace(players) {
-    return [...players].sort((a, b) => {
-        if (a.correctCount !== b.correctCount) return b.correctCount - a.correctCount;
-        if (a.totalInputCount !== b.totalInputCount) return b.totalInputCount - a.totalInputCount;
-        if (a.errorCount !== b.errorCount) return a.errorCount - b.errorCount;
-        return (a.finishedAt ?? Infinity) - (b.finishedAt ?? Infinity);
-    });
-}
-
-function getPlayerRaceRank(room, playerId) {
-    const sorted = sortPlayersByRace(Array.from(room.players.values()));
-    const index = sorted.findIndex((player) => player.playerId === playerId);
-    return index >= 0 ? index + 1 : null;
+function listPublicRooms() {
+    return Array.from(rooms.values())
+        .filter((room) => room.status === 'waiting' && room.isPublic)
+        .map((room) => {
+            const host = room.players.get(room.hostPlayerId);
+            return {
+                roomCode: room.code,
+                roomName: room.roomName,
+                hostName: host?.name ?? 'Host',
+                difficulty: room.difficulty,
+                minutes: room.minutes,
+                currentPlayers: room.players.size,
+                maxPlayers: room.maxPlayers,
+                autoStart: room.autoStart,
+                teamMode: room.teamMode,
+                scoreMode: room.scoreMode,
+            };
+        })
+        .sort((a, b) => b.currentPlayers - a.currentPlayers || a.roomCode.localeCompare(b.roomCode));
 }
 
 async function persistMultiplayerResult(room, player, multiplayerRank) {
@@ -319,7 +482,7 @@ async function persistMultiplayerResult(room, player, multiplayerRank) {
         const totalAttempts = player.totalInputCount + player.errorCount;
         const correctRate = totalAttempts > 0 ? (player.correctCount / totalAttempts) * 100 : 0;
         const errorRate = totalAttempts > 0 ? (player.errorCount / totalAttempts) * 100 : 0;
-        const kpm = player.elapsedTime > 0 ? player.totalInputCount / (player.elapsedTime / 60000) : 0;
+        const kpm = getPlayerKpm(player);
         const sessionId = `multi-${room.code}-${room.startedAt ?? Date.now()}`;
 
         await tursoClient.batch(
@@ -353,6 +516,7 @@ async function persistMultiplayerResult(room, player, multiplayerRank) {
                             correct_count,
                             error_count,
                             total_input_count,
+                            completed_question_count,
                             correct_rate,
                             error_rate,
                             kpm,
@@ -369,6 +533,7 @@ async function persistMultiplayerResult(room, player, multiplayerRank) {
                         toNonNegativeInt(player.correctCount),
                         toNonNegativeInt(player.errorCount),
                         toNonNegativeInt(player.totalInputCount),
+                        toNonNegativeInt(player.completedQuestionCount),
                         Math.max(correctRate, 0),
                         Math.max(errorRate, 0),
                         Math.max(kpm, 0),
@@ -416,17 +581,49 @@ async function persistMultiplayerResult(room, player, multiplayerRank) {
 function emitRoomState(roomCode) {
     const room = rooms.get(roomCode);
     if (!room) return;
-    const players = sortPlayersByRace(Array.from(room.players.values())).map(toPublicPlayer);
+    const players = sortPlayersByCompetition(room).map(toPublicPlayer);
 
     io.to(roomCode).emit('room:state', {
         roomCode: room.code,
+        roomName: room.roomName,
         hostPlayerId: room.hostPlayerId,
         difficulty: room.difficulty,
         minutes: room.minutes,
+        maxPlayers: room.maxPlayers,
+        isPublic: room.isPublic,
+        autoStart: room.autoStart,
+        teamMode: room.teamMode,
+        scoreMode: room.scoreMode,
         status: room.status,
         questionLength: room.question.romaji.length,
         startedAt: room.startedAt ?? null,
         players,
+    });
+}
+
+function maybeAutoStart(roomCode) {
+    const room = rooms.get(roomCode);
+    if (!room || room.status !== 'waiting' || !room.autoStart) return;
+
+    const players = Array.from(room.players.values());
+    if (players.length < 2) return;
+
+    const nonHostPlayers = players.filter((player) => player.playerId !== room.hostPlayerId);
+    if (nonHostPlayers.length === 0) return;
+
+    const everyoneReady = nonHostPlayers.every((player) => player.isReady);
+    if (!everyoneReady) return;
+
+    room.status = 'playing';
+    room.startedAt = Date.now();
+    players.forEach((player) => {
+        resetPlayerStatus(player);
+    });
+    emitRoomState(roomCode);
+    io.to(roomCode).emit('game:started', {
+        question: room.question,
+        timeLimitSeconds: room.minutes * 60,
+        startedAt: room.startedAt,
     });
 }
 
@@ -442,18 +639,32 @@ function handleCompletionIfFinished(roomCode) {
 }
 
 io.on('connection', (socket) => {
-    socket.on('room:create', ({ playerName, difficulty, minutes }, ack) => {
+    socket.on('room:list-public', (_payload, ack) => {
+        ack?.({ ok: true, rooms: listPublicRooms() });
+    });
+
+    socket.on('room:create', ({ playerName, difficulty, minutes, maxPlayers, isPublic, autoStart, teamMode, scoreMode }, ack) => {
         const roomCode = generateUniqueRoomCode();
         const safeDifficulty = normalizeDifficulty(difficulty);
         const safeMinutes = normalizeMinutes(minutes);
+        const safeMaxPlayers = normalizeMaxPlayers(maxPlayers);
+        const safeIsPublic = normalizeBoolean(isPublic, true);
+        const safeAutoStart = normalizeBoolean(autoStart, false);
+        const safeTeamMode = normalizeTeamMode(teamMode);
         const question = pickQuestion(safeDifficulty);
         const playerId = socket.id;
 
         const room = {
             code: roomCode,
+            roomName: makeRoomName(),
             hostPlayerId: playerId,
             difficulty: safeDifficulty,
             minutes: safeMinutes,
+            maxPlayers: safeMaxPlayers,
+            isPublic: safeIsPublic,
+            autoStart: safeAutoStart,
+            teamMode: safeTeamMode,
+            scoreMode: normalizeScoreMode(scoreMode),
             status: 'waiting',
             question,
             startedAt: null,
@@ -464,10 +675,13 @@ io.on('connection', (socket) => {
             playerId,
             socketId: socket.id,
             name: sanitizePlayerName(playerName, 'Host'),
+            isReady: false,
+            teamId: safeTeamMode === 'two-teams' ? 'A' : null,
             currentCharIndex: 0,
             correctCount: 0,
             errorCount: 0,
             totalInputCount: 0,
+            completedQuestionCount: 0,
             isCompleted: false,
             elapsedTime: 0,
             finishedAt: null,
@@ -480,7 +694,7 @@ io.on('connection', (socket) => {
         socket.data.roomCode = roomCode;
         socket.data.playerId = playerId;
 
-        ack?.({ ok: true, roomCode, playerId, question });
+        ack?.({ ok: true, roomCode, playerId, question, roomName: room.roomName });
         emitRoomState(roomCode);
     });
 
@@ -495,7 +709,7 @@ io.on('connection', (socket) => {
             ack?.({ ok: false, message: '既に開始済みのルームです。' });
             return;
         }
-        if (room.players.size >= MAX_PLAYERS_PER_ROOM) {
+        if (room.players.size >= room.maxPlayers) {
             ack?.({ ok: false, message: 'ルームが満員です。' });
             return;
         }
@@ -505,10 +719,13 @@ io.on('connection', (socket) => {
             playerId,
             socketId: socket.id,
             name: sanitizePlayerName(playerName, 'Player'),
+            isReady: false,
+            teamId: room.teamMode === 'two-teams' ? (room.players.size % 2 === 0 ? 'A' : 'B') : null,
             currentCharIndex: 0,
             correctCount: 0,
             errorCount: 0,
             totalInputCount: 0,
+            completedQuestionCount: 0,
             isCompleted: false,
             elapsedTime: 0,
             finishedAt: null,
@@ -539,9 +756,16 @@ io.on('connection', (socket) => {
             ack?.({ ok: false, message: '開始できる状態ではありません。' });
             return;
         }
+        if (room.players.size < 2) {
+            ack?.({ ok: false, message: '2人以上で開始してください。' });
+            return;
+        }
 
         room.status = 'playing';
         room.startedAt = Date.now();
+        room.players.forEach((player) => {
+            resetPlayerStatus(player);
+        });
         emitRoomState(normalizedCode);
         io.to(normalizedCode).emit('game:started', {
             question: room.question,
@@ -551,7 +775,7 @@ io.on('connection', (socket) => {
         ack?.({ ok: true });
     });
 
-    socket.on('room:update-settings', ({ roomCode, difficulty, minutes }, ack) => {
+    socket.on('room:update-settings', ({ roomCode, difficulty, minutes, maxPlayers, isPublic, autoStart, teamMode, scoreMode }, ack) => {
         const normalizedCode = normalizeRoomCode(roomCode);
         const room = rooms.get(normalizedCode);
         if (!room) {
@@ -569,9 +793,153 @@ io.on('connection', (socket) => {
 
         room.difficulty = normalizeDifficulty(difficulty ?? room.difficulty);
         room.minutes = normalizeMinutes(minutes ?? room.minutes);
+        room.maxPlayers = Math.max(room.players.size, normalizeMaxPlayers(maxPlayers ?? room.maxPlayers));
+        room.isPublic = normalizeBoolean(isPublic, room.isPublic);
+        room.autoStart = normalizeBoolean(autoStart, room.autoStart);
+        room.teamMode = normalizeTeamMode(teamMode ?? room.teamMode);
+        room.scoreMode = normalizeScoreMode(scoreMode ?? room.scoreMode);
+        assignTeamsForRoom(room);
         room.question = pickQuestion(room.difficulty);
         emitRoomState(normalizedCode);
+        maybeAutoStart(normalizedCode);
         ack?.({ ok: true, question: room.question });
+    });
+
+    socket.on('room:set-ready', ({ roomCode, isReady }, ack) => {
+        const normalizedCode = normalizeRoomCode(roomCode);
+        const room = rooms.get(normalizedCode);
+        if (!room) {
+            ack?.({ ok: false, message: 'ルームが見つかりません。' });
+            return;
+        }
+        if (room.status !== 'waiting') {
+            ack?.({ ok: false, message: '待機中のみ準備できます。' });
+            return;
+        }
+        if (room.hostPlayerId === socket.id) {
+            ack?.({ ok: false, message: 'ホストは準備完了できません。' });
+            return;
+        }
+
+        const player = room.players.get(socket.id);
+        if (!player) {
+            ack?.({ ok: false, message: '参加プレイヤーではありません。' });
+            return;
+        }
+
+        player.isReady = normalizeBoolean(isReady, !player.isReady);
+        emitRoomState(normalizedCode);
+        maybeAutoStart(normalizedCode);
+        ack?.({ ok: true });
+    });
+
+    socket.on('room:set-team', ({ roomCode, targetPlayerId, teamId }, ack) => {
+        const normalizedCode = normalizeRoomCode(roomCode);
+        const room = rooms.get(normalizedCode);
+        if (!room) {
+            ack?.({ ok: false, message: 'ルームが見つかりません。' });
+            return;
+        }
+        if (room.hostPlayerId !== socket.id) {
+            ack?.({ ok: false, message: 'ホストのみ操作できます。' });
+            return;
+        }
+        if (room.status !== 'waiting') {
+            ack?.({ ok: false, message: '待機中のみチーム変更できます。' });
+            return;
+        }
+        if (room.teamMode !== 'two-teams') {
+            ack?.({ ok: false, message: '2チームモードでのみ変更できます。' });
+            return;
+        }
+
+        const player = room.players.get(String(targetPlayerId ?? ''));
+        if (!player) {
+            ack?.({ ok: false, message: '対象プレイヤーが見つかりません。' });
+            return;
+        }
+
+        player.teamId = teamId === 'B' ? 'B' : 'A';
+        emitRoomState(normalizedCode);
+        ack?.({ ok: true });
+    });
+
+    socket.on('room:kick', ({ roomCode, targetPlayerId }, ack) => {
+        const normalizedCode = normalizeRoomCode(roomCode);
+        const room = rooms.get(normalizedCode);
+        if (!room) {
+            ack?.({ ok: false, message: 'ルームが見つかりません。' });
+            return;
+        }
+        if (room.hostPlayerId !== socket.id) {
+            ack?.({ ok: false, message: 'ホストのみ操作できます。' });
+            return;
+        }
+        if (room.status !== 'waiting') {
+            ack?.({ ok: false, message: '待機中のみキックできます。' });
+            return;
+        }
+
+        const targetId = String(targetPlayerId ?? '');
+        if (!targetId || targetId === room.hostPlayerId) {
+            ack?.({ ok: false, message: 'ホストはキックできません。' });
+            return;
+        }
+
+        const targetPlayer = room.players.get(targetId);
+        if (!targetPlayer) {
+            ack?.({ ok: false, message: '対象プレイヤーが見つかりません。' });
+            return;
+        }
+
+        const targetSocket = io.sockets.sockets.get(targetPlayer.socketId);
+        if (targetSocket) {
+            targetSocket.leave(normalizedCode);
+            targetSocket.data.roomCode = undefined;
+            targetSocket.data.playerId = undefined;
+            targetSocket.emit('room:kicked', { roomCode: normalizedCode });
+        }
+
+        room.players.delete(targetId);
+        emitRoomState(normalizedCode);
+        ack?.({ ok: true });
+    });
+
+    socket.on('room:transfer-host', ({ roomCode, targetPlayerId }, ack) => {
+        const normalizedCode = normalizeRoomCode(roomCode);
+        const room = rooms.get(normalizedCode);
+        if (!room) {
+            ack?.({ ok: false, message: 'ルームが見つかりません。' });
+            return;
+        }
+        if (room.hostPlayerId !== socket.id) {
+            ack?.({ ok: false, message: 'ホストのみ操作できます。' });
+            return;
+        }
+        if (room.status !== 'waiting') {
+            ack?.({ ok: false, message: '待機中のみホスト権限を譲渡できます。' });
+            return;
+        }
+
+        const targetId = String(targetPlayerId ?? '');
+        if (!targetId || targetId === room.hostPlayerId) {
+            ack?.({ ok: false, message: '譲渡先プレイヤーを指定してください。' });
+            return;
+        }
+
+        const targetPlayer = room.players.get(targetId);
+        if (!targetPlayer) {
+            ack?.({ ok: false, message: '対象プレイヤーが見つかりません。' });
+            return;
+        }
+
+        room.hostPlayerId = targetId;
+        room.players.forEach((player) => {
+            player.isReady = false;
+        });
+
+        emitRoomState(normalizedCode);
+        ack?.({ ok: true });
     });
 
     socket.on('room:reopen', ({ roomCode }, ack) => {
@@ -591,6 +959,7 @@ io.on('connection', (socket) => {
         room.question = pickQuestion(room.difficulty);
         room.players.forEach((player) => resetPlayerStatus(player));
         emitRoomState(normalizedCode);
+        maybeAutoStart(normalizedCode);
         ack?.({ ok: true, question: room.question });
     });
 
@@ -606,10 +975,12 @@ io.on('connection', (socket) => {
         const nextCorrect = toNonNegativeInt(progress?.correctCount);
         const nextTotal = toNonNegativeInt(progress?.totalInputCount);
         const nextError = toNonNegativeInt(progress?.errorCount);
+        const nextCompletedQuestionCount = toNonNegativeInt(progress?.completedQuestionCount);
         player.currentCharIndex = Math.max(player.currentCharIndex, nextCurrent);
         player.correctCount = Math.max(player.correctCount, nextCorrect);
         player.totalInputCount = Math.max(player.totalInputCount, nextTotal);
         player.errorCount = Math.max(player.errorCount, nextError);
+        player.completedQuestionCount = Math.max(player.completedQuestionCount, nextCompletedQuestionCount);
         player.elapsedTime = room.startedAt ? Date.now() - room.startedAt : 0;
 
         emitRoomState(normalizedCode);
@@ -627,11 +998,12 @@ io.on('connection', (socket) => {
         player.correctCount = Math.max(player.correctCount, toNonNegativeInt(stats?.correctCount));
         player.totalInputCount = Math.max(player.totalInputCount, toNonNegativeInt(stats?.totalInputCount));
         player.errorCount = Math.max(player.errorCount, toNonNegativeInt(stats?.errorCount));
+        player.completedQuestionCount = Math.max(player.completedQuestionCount, toNonNegativeInt(stats?.completedQuestionCount));
         player.elapsedTime = Math.max(player.elapsedTime, toNonNegativeInt(stats?.elapsedTime));
         player.isCompleted = true;
         player.finishedAt = Date.now();
 
-        const multiplayerRank = getPlayerRaceRank(room, player.playerId);
+        const multiplayerRank = getCompetitionRank(room, player.playerId);
         await persistMultiplayerResult(room, player, multiplayerRank);
         emitRoomState(normalizedCode);
         handleCompletionIfFinished(normalizedCode);
@@ -655,6 +1027,8 @@ io.on('connection', (socket) => {
             const nextHost = room.players.values().next().value;
             room.hostPlayerId = nextHost.playerId;
         }
+
+        assignTeamsForRoom(room);
 
         emitRoomState(roomCode);
     });

@@ -13,6 +13,8 @@ interface HomeScreenProps {
     onSelectMultiPlay: () => void;
     onSelectLeaderboard: () => void;
     appVersion: string;
+    initialShowDifficultySelect?: boolean;
+    onExitDifficultySelect?: () => void;
 }
 
 /**
@@ -25,10 +27,16 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     onSelectMultiPlay,
     onSelectLeaderboard,
     appVersion,
+    initialShowDifficultySelect = false,
+    onExitDifficultySelect,
 }) => {
-    const [showDifficultySelect, setShowDifficultySelect] = React.useState(false);
+    const [showDifficultySelect, setShowDifficultySelect] = React.useState(initialShowDifficultySelect);
     const [selectedMinutes, setSelectedMinutes] = React.useState<number>(1);
     const [isServerOnline, setIsServerOnline] = React.useState<boolean | null>(null);
+
+    React.useEffect(() => {
+        setShowDifficultySelect(initialShowDifficultySelect);
+    }, [initialShowDifficultySelect]);
 
     const difficultyOptions: { key: Difficulty; label: string; description: string; icon: LucideIcon }[] = [
         { key: 'easy', label: '初級', description: '単語中心', icon: Keyboard },
@@ -154,7 +162,10 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                             </ActionButton>
                         ))}
                         <ActionButton
-                            onClick={() => setShowDifficultySelect(false)}
+                            onClick={() => {
+                                setShowDifficultySelect(false);
+                                onExitDifficultySelect?.();
+                            }}
                             variant="ghost"
                             icon={ChevronLeft}
                             size="lg"
