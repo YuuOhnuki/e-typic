@@ -11,10 +11,13 @@ import {
     Home,
     Lock,
     LogIn,
+    MessageSquare,
     Plus,
     RefreshCw,
+    Send,
     ShieldX,
     Swords,
+    X,
     Users,
 } from 'lucide-react';
 import { TypingDisplay } from '@/components/TypingDisplay';
@@ -23,7 +26,13 @@ import { Button } from '@/components/ui/button';
 import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Difficulty, Question } from '@/types/typing';
-import { GameStartedPayload, MultiplayerRoomState, PublicRoomSummary, ScoreMode, TeamMode } from '@/types/multiplayer';
+import {
+    GameStartedPayload,
+    MultiplayerRoomState,
+    PublicRoomSummary,
+    ScoreMode,
+    TeamMode,
+} from '@/types/multiplayer';
 import questionsData from '@/data/questions.json';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_MULTIPLAYER_URL ?? 'http://localhost:4001';
@@ -64,6 +73,10 @@ interface UpdateSettingsAck extends RoomActionAck {
 
 interface PublicRoomsAck extends RoomActionAck {
     rooms?: PublicRoomSummary[];
+}
+
+interface ChatMessageAck extends RoomActionAck {
+    message?: string;
 }
 
 /**
@@ -137,8 +150,12 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     const [completedQuestionCount, setCompletedQuestionCount] = useState(0);
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [stayInRoom, setStayInRoom] = useState(false);
+    const [chatInput, setChatInput] = useState('');
+    const [isChatInputFocused, setIsChatInputFocused] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
     const completionSentRef = useRef(false);
     const [serverOnline, setServerOnline] = useState<boolean | null>(null);
+    const chatScrollRef = useRef<HTMLDivElement | null>(null);
 
     const isHost = roomState?.hostPlayerId === playerId;
     const currentRoomCode = roomState?.roomCode ?? '';
@@ -279,6 +296,17 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
         checkServerHealth();
     }, []);
 
+    useEffect(() => {
+        if (mode !== 'lobby') return;
+        chatScrollRef.current?.scrollTo({ top: chatScrollRef.current.scrollHeight, behavior: 'smooth' });
+    }, [mode, roomState?.chatMessages]);
+
+    useEffect(() => {
+        if (mode !== 'lobby') {
+            setIsChatOpen(false);
+        }
+    }, [mode]);
+
     const createRoom = useCallback(() => {
         setErrorMessage('');
         const socket = ensureSocket();
@@ -401,7 +429,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 isPublic: isPublicRoom,
                 autoStart,
                 teamMode,
-                    scoreMode,
+                scoreMode,
             },
             (response: UpdateSettingsAck) => {
                 if (!response.ok) {
@@ -414,6 +442,29 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             },
         );
     }, [autoStart, difficulty, ensureSocket, isPublicRoom, maxPlayers, minutes, roomState, scoreMode, teamMode]);
+
+    const sendLobbyChat = useCallback(() => {
+        if (!roomState || roomState.status !== 'waiting') return;
+        const normalizedContent = chatInput.trim();
+        if (!normalizedContent) return;
+
+        setErrorMessage('');
+        const socket = ensureSocket();
+        socket.emit(
+            'room:chat',
+            {
+                roomCode: roomState.roomCode,
+                content: normalizedContent,
+            },
+            (response: ChatMessageAck) => {
+                if (!response.ok) {
+                    setErrorMessage(response.message ?? 'チャットの送信に失敗しました。');
+                    return;
+                }
+                setChatInput('');
+            },
+        );
+    }, [chatInput, ensureSocket, roomState]);
 
     const setReady = useCallback(
         (nextReady: boolean) => {
@@ -852,8 +903,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
     if (mode === 'lobby') {
         const me = roomState?.players.find((player) => player.playerId === playerId);
+        const chatMessages = roomState?.chatMessages ?? [];
         return (
-            <div className="h-dvh p-3 md:p-4 overflow-hidden">
+            <div className="relative h-dvh p-3 md:p-4 overflow-hidden">
                 <div className="surface-card max-w-3xl mx-auto h-full p-4 md:p-5 space-y-4 animate-fade-up-soft overflow-y-auto">
                     <div className="flex items-center justify-between">
                         <div>
@@ -1149,6 +1201,83 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     </ActionButtonRow>
                     {errorMessage && <div className="text-sm text-red-600">{errorMessage}</div>}
                 </div>
+
+                {isChatOpen ? (
+                    <div
+                        className="absolute inset-0 z-20"
+                        onClick={() => setIsChatOpen(false)}
+                        aria-hidden="true"
+                    >
+                        <div className="absolute left-3 bottom-3 w-[min(68vw,15rem)] md:left-4 md:bottom-4 md:w-[16rem] lg:w-[17rem]" onClick={(event) => event.stopPropagation()}>
+                            <div className="surface-card overflow-hidden shadow-lg">
+                                <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
+                                    <div className="text-sm font-medium">ロビーのチャット</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-xs text-muted-foreground">{chatMessages.length}件</div>
+                                        <Button
+                                            type="button"
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-7 w-7 p-0"
+                                            onClick={() => setIsChatOpen(false)}
+                                            aria-label="チャットを閉じる"
+                                        >
+                                            <X className="size-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div ref={chatScrollRef} className="max-h-44 space-y-1 overflow-y-auto px-3 py-2 scrollbar-hide">
+                                    {chatMessages.length === 0 ? (
+                                        <div className="text-xs text-muted-foreground">まだメッセージはありません。</div>
+                                    ) : (
+                                        chatMessages.map((message) => (
+                                            <div key={message.id} className="text-sm leading-relaxed break-words">
+                                                <span className="font-semibold text-foreground">{message.playerName}</span>
+                                                <span className="text-muted-foreground">: {message.content}</span>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                <div className="border-t border-border/60 p-2">
+                                    <form
+                                        className="flex items-center gap-2"
+                                        onSubmit={(event) => {
+                                            event.preventDefault();
+                                            sendLobbyChat();
+                                        }}
+                                    >
+                                        <input
+                                            value={chatInput}
+                                            onChange={(event) => setChatInput(event.target.value)}
+                                            onFocus={() => setIsChatInputFocused(true)}
+                                            onBlur={() => setIsChatInputFocused(false)}
+                                            placeholder="メッセージを入力"
+                                            className="surface-input min-w-0 flex-1 px-3 py-2 text-sm"
+                                            maxLength={120}
+                                        />
+                                        <Button
+                                            type="submit"
+                                            size="sm"
+                                            className={`h-9 shrink-0 px-0 ${isChatInputFocused ? 'w-16' : 'w-9'}`}
+                                            aria-label="メッセージを送信"
+                                        >
+                                            {isChatInputFocused ? <span className="text-xs font-medium">送信</span> : <Send className="size-4" />}
+                                        </Button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <Button
+                        type="button"
+                        onClick={() => setIsChatOpen(true)}
+                        className="absolute left-3 bottom-3 z-20 h-11 w-11 rounded-full px-0 md:left-4 md:bottom-4"
+                        aria-label="チャットを開く"
+                    >
+                        <MessageSquare className="size-5" />
+                    </Button>
+                )}
             </div>
         );
     }

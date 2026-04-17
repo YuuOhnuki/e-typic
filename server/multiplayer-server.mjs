@@ -13,6 +13,7 @@ const MINUTES_MAX = 5;
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 const ALLOWED_TEAM_MODES = new Set(['free', 'two-teams']);
 const ALLOWED_SCORE_MODES = new Set(['correct-count', 'correct-rate', 'completed-questions', 'kpm']);
+const MAX_CHAT_MESSAGES = 30;
 
 function loadLocalEnv() {
     const envPath = path.join(process.cwd(), '.env');
@@ -137,6 +138,7 @@ const questionsData = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
  *   status: 'waiting' | 'playing' | 'finished';
  *   question: { id: string; difficulty: string; japanese: string; romaji: string; alternatives?: string[] };
  *   startedAt: number | null;
+ *   chatMessages: Array<{ id: string; playerId: string; playerName: string; content: string; sentAt: number }>;
  *   players: Map<string, Player>;
  * }} Room
  */
@@ -314,6 +316,16 @@ function toNonNegativeInt(value) {
     const numeric = Number(value);
     if (!Number.isFinite(numeric) || numeric < 0) return 0;
     return Math.floor(numeric);
+}
+
+/**
+ * チャット本文を1行テキストへ正規化し、UI崩れや制御文字混入を防ぐ。
+ * @param {unknown} value
+ * @returns {string}
+ */
+function normalizeChatContent(value) {
+    if (typeof value !== 'string') return '';
+    return value.replace(/[\x00-\x1F\x7F]/g, '').trim().slice(0, 120);
 }
 
 async function ensureDbSchema() {
@@ -598,6 +610,7 @@ function emitRoomState(roomCode) {
         questionLength: room.question.romaji.length,
         startedAt: room.startedAt ?? null,
         players,
+        chatMessages: room.chatMessages,
     });
 }
 
@@ -668,6 +681,7 @@ io.on('connection', (socket) => {
             status: 'waiting',
             question,
             startedAt: null,
+            chatMessages: [],
             players: new Map(),
         };
 
@@ -739,6 +753,50 @@ io.on('connection', (socket) => {
 
         ack?.({ ok: true, roomCode: normalizedCode, playerId, question: room.question });
         emitRoomState(normalizedCode);
+    });
+
+    socket.on('room:chat', ({ roomCode, content }, ack) => {
+        const normalizedCode = normalizeRoomCode(roomCode);
+        if (normalizedCode !== socket.data.roomCode) {
+            ack?.({ ok: false, message: 'ルームに参加していません。' });
+            return;
+        }
+
+        const room = rooms.get(normalizedCode);
+        if (!room) {
+            ack?.({ ok: false, message: 'ルームが見つかりません。' });
+            return;
+        }
+        if (room.status !== 'waiting') {
+            ack?.({ ok: false, message: 'ロビーでのみチャットできます。' });
+            return;
+        }
+
+        const player = room.players.get(socket.id);
+        if (!player) {
+            ack?.({ ok: false, message: '参加プレイヤーではありません。' });
+            return;
+        }
+
+        const normalizedContent = normalizeChatContent(content);
+        if (!normalizedContent) {
+            ack?.({ ok: false, message: 'メッセージを入力してください。' });
+            return;
+        }
+
+        room.chatMessages.push({
+            id: `${Date.now()}-${socket.id}-${room.chatMessages.length + 1}`,
+            playerId: player.playerId,
+            playerName: player.name,
+            content: normalizedContent,
+            sentAt: Date.now(),
+        });
+        if (room.chatMessages.length > MAX_CHAT_MESSAGES) {
+            room.chatMessages.splice(0, room.chatMessages.length - MAX_CHAT_MESSAGES);
+        }
+
+        emitRoomState(normalizedCode);
+        ack?.({ ok: true });
     });
 
     socket.on('room:start', ({ roomCode }, ack) => {

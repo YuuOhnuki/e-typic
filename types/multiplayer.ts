@@ -22,6 +22,14 @@ export interface MultiplayerPlayer {
     dbRank?: number | null;
 }
 
+export interface MultiplayerChatMessage {
+    id: string;
+    playerId: string;
+    playerName: string;
+    content: string;
+    sentAt: number;
+}
+
 export interface MultiplayerRoomState {
     roomCode: string;
     roomName: string;
@@ -37,6 +45,7 @@ export interface MultiplayerRoomState {
     questionLength: number;
     startedAt: number | null;
     players: MultiplayerPlayer[];
+    chatMessages: MultiplayerChatMessage[];
 }
 
 export interface PublicRoomSummary {
