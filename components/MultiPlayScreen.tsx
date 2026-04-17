@@ -28,6 +28,26 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp
 import { Difficulty, Question } from '@/types/typing';
 import { useCountdown } from '@/lib/use-countdown';
 import {
+    MINUTES_MIN,
+    MINUTES_MAX,
+    ROOM_CODE_LENGTH,
+    MAX_PLAYERS_MIN,
+    MAX_PLAYERS_MAX,
+    normalizeRoomCode,
+    normalizePlayerName,
+    clampMinutes,
+    clampMaxPlayers,
+} from '@/lib/multiplayer-utils';
+import { getTeamNameClass, getTeamBadgeClass } from '@/lib/team-utils';
+import {
+    SOCKET_URL,
+    HEALTH_CHECK_URL,
+    DEFAULT_PLAYER_NAME,
+    DEFAULT_HOST_NAME,
+    difficultyOptions,
+    scoreModeLabels,
+} from '@/lib/multiplayer-constants';
+import {
     GameCountdownPayload,
     GameStartedPayload,
     MultiplayerRoomState,
@@ -36,22 +56,6 @@ import {
     TeamMode,
 } from '@/types/multiplayer';
 import questionsData from '@/data/questions.json';
-
-const SOCKET_URL = process.env.NEXT_PUBLIC_MULTIPLAYER_URL ?? 'http://localhost:4001';
-const HEALTH_CHECK_URL = `${SOCKET_URL}/health`;
-const DEFAULT_PLAYER_NAME = 'Player';
-const DEFAULT_HOST_NAME = 'Host';
-const MINUTES_MIN = 1;
-const MINUTES_MAX = 5;
-const ROOM_CODE_LENGTH = 3;
-const MAX_PLAYERS_MIN = 2;
-const MAX_PLAYERS_MAX = 20;
-
-const difficultyOptions: { key: Difficulty; label: string }[] = [
-    { key: 'easy', label: '初級' },
-    { key: 'medium', label: '中級' },
-    { key: 'hard', label: '上級' },
-];
 
 type Mode = 'menu' | 'lobby' | 'playing' | 'finished';
 type MenuView = 'create' | 'join';
@@ -84,46 +88,6 @@ interface ChatMessageAck extends RoomActionAck {
 interface UpdatePlayerNameAck extends RoomActionAck {
     playerName?: string;
 }
-
-/**
- * ルームコード入力を 3 桁数字に正規化する。
- */
-const normalizeRoomCode = (value: string): string => value.replace(/\D/g, '').slice(0, ROOM_CODE_LENGTH);
-
-/**
- * ユーザー名をトリム・長さ制限して送信値を安定化する。
- */
-const normalizePlayerName = (value: string, fallback: string): string => {
-    const normalized = value.trim().slice(0, 16);
-    return normalized || fallback;
-};
-
-/**
- * 時間(分)を許可範囲に丸めて不正な UI 値混入を防ぐ。
- */
-const clampMinutes = (value: number): number => Math.max(MINUTES_MIN, Math.min(MINUTES_MAX, Math.round(value)));
-const clampMaxPlayers = (value: number): number => Math.max(MAX_PLAYERS_MIN, Math.min(MAX_PLAYERS_MAX, Math.round(value)));
-
-const scoreModeLabels: Record<ScoreMode, string> = {
-    'correct-count': '正解タイプ数',
-    'correct-rate': '正解率',
-    'completed-questions': '正解問題数',
-    kpm: 'KPM',
-};
-
-const getTeamNameClass = (mode: TeamMode, teamId: 'A' | 'B' | null | undefined): string => {
-    if (mode !== 'two-teams') return 'text-foreground';
-    if (teamId === 'A') return 'text-cyan-600 dark:text-cyan-300';
-    if (teamId === 'B') return 'text-rose-600 dark:text-rose-300';
-    return 'text-muted-foreground';
-};
-
-const getTeamBadgeClass = (mode: TeamMode, teamId: 'A' | 'B' | null | undefined): string => {
-    if (mode !== 'two-teams') return 'bg-muted text-muted-foreground';
-    if (teamId === 'A') return 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300';
-    if (teamId === 'B') return 'bg-rose-500/15 text-rose-700 dark:text-rose-300';
-    return 'bg-muted text-muted-foreground';
-};
 
 const isTypingElement = (target: EventTarget | null): boolean => {
     if (!(target instanceof HTMLElement)) return false;
