@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSession } from 'next-auth/react';
 import { ChevronLeft, Play } from 'lucide-react';
 import { TypingDisplay } from '@/components/TypingDisplay';
 import { ProgressBar } from '@/components/ProgressBar';
@@ -44,6 +45,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
     // ゲーム状態
     const { isPlaying, isPaused, difficulty, gameDurationMinutes, currentSession, startGame, endGame, resetGame } =
         useGameStore();
+    const { data: session } = useSession();
 
     const [showResult, setShowResult] = useState(false);
     const [gameResult, setGameResult] = useState<GameResult | null>(null);
@@ -51,6 +53,11 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
     const [isSavingPlayerName, setIsSavingPlayerName] = useState(false);
     const [isPlayerNameSaved, setIsPlayerNameSaved] = useState(false);
     const [savePlayerNameError, setSavePlayerNameError] = useState('');
+    const [levelInfo, setLevelInfo] = useState<{
+        previousLevel: number;
+        currentLevel: number;
+        leveledUp: boolean;
+    } | null>(null);
     const [timeLimit, setTimeLimit] = useState(60);
     const [startCountdownTargetAt, setStartCountdownTargetAt] = useState<number | null>(null);
     const [elapsedTime, setElapsedTime] = useState(0);
@@ -70,7 +77,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
     const [currentPhase, setCurrentPhase] = useState(1);
     const [maxPhaseReached, setMaxPhaseReached] = useState(1);
     const [phaseToastText, setPhaseToastText] = useState<string | null>(null);
-    const [hpFloatingTexts, setHpFloatingTexts] = useState<Array<{ id: string; text: string; x: number; y: number }>>([], );
+    const [hpFloatingTexts, setHpFloatingTexts] = useState<Array<{ id: string; text: string; x: number; y: number }>>(
+        [],
+    );
 
     const comboRef = React.useRef(0);
     const hpRef = React.useRef<number>(SURVIVAL_SETTINGS.initialHp);
@@ -159,9 +168,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
     const getRandomQuestion = useCallback((diff: Difficulty): Question => {
         const questionMap = (questionsData as unknown as { questions: Record<string, Question[]> }).questions;
         const questionDifficulty: QuestionDifficulty =
-            diff === 'survival'
-                ? (['easy', 'medium', 'hard'] as const)[Math.floor(Math.random() * 3)]
-                : diff;
+            diff === 'survival' ? (['easy', 'medium', 'hard'] as const)[Math.floor(Math.random() * 3)] : diff;
         const questions = questionMap[questionDifficulty] || [];
         if (questions.length === 0) {
             return {
@@ -306,14 +313,21 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
             try {
                 setIsSavingPlayerName(true);
                 setSavePlayerNameError('');
+
+                // ログイン状態の場合は userId を playerId として使用
+                const finalResult = {
+                    ...result,
+                    playerName,
+                    playerId: session?.user?.id || result.playerId,
+                };
+
                 const response = await fetch('/api/results', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        ...result,
-                        playerName,
+                        ...finalResult,
                         mode: 'single',
                         startedAt: currentSession?.startedAt,
                         endedAt: Date.now(),
@@ -328,6 +342,11 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                     ok: boolean;
                     dbRank?: number;
                     leaderboard?: DifficultyLeaderboardEntry[];
+                    levelInfo?: {
+                        previousLevel: number;
+                        currentLevel: number;
+                        leveledUp: boolean;
+                    };
                 };
 
                 if (!payload.ok) {
@@ -336,6 +355,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
 
                 setGameResult((prev) => (prev ? { ...prev, dbRank: payload.dbRank, playerName } : prev));
                 setLeaderboard(Array.isArray(payload.leaderboard) ? payload.leaderboard : []);
+                if (payload.levelInfo) {
+                    setLevelInfo(payload.levelInfo);
+                }
                 setIsPlayerNameSaved(true);
                 if (typeof window !== 'undefined') {
                     window.localStorage.setItem('typic-player-name', playerName);
@@ -347,7 +369,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                 setIsSavingPlayerName(false);
             }
         },
-        [currentSession],
+        [currentSession, session?.user?.id],
     );
 
     const handleSavePlayerName = useCallback(
@@ -366,8 +388,14 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
         const totalTime = elapsedTime * 1000;
         const kpm = totalInputCount / (totalTime / 60000) || 0;
         const totalAttemptCount = totalInputCount + errorCount;
-        const defaultPlayerName =
-            typeof window !== 'undefined' ? window.localStorage.getItem('typic-player-name') || 'Player' : 'Player';
+
+        // ログイン状態の場合はユーザー名を使用、未ログインならローカルストレージから取得
+        let defaultPlayerName = 'Player';
+        if (session?.user?.username) {
+            defaultPlayerName = session.user.username;
+        } else if (typeof window !== 'undefined') {
+            defaultPlayerName = window.localStorage.getItem('typic-player-name') || 'Player';
+        }
 
         const result: GameResult = {
             sessionId: currentSession?.sessionId || `session-${Date.now()}`,
@@ -393,6 +421,13 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
         setSavePlayerNameError('');
         setShowResult(true);
         endGame(result);
+
+        // ログイン状態の場合は自動的に結果を保存
+        if (session?.user?.username) {
+            setTimeout(() => {
+                void saveResultToDb(result, session.user!.username);
+            }, 0);
+        }
     }, [
         completedQuestionCount,
         correctCount,
@@ -406,6 +441,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
         maxCombo,
         maxPhaseReached,
         totalInputCount,
+        session?.user?.username,
     ]);
 
     /**
@@ -582,6 +618,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                 isSavingName={isSavingPlayerName}
                 isSavedName={isPlayerNameSaved}
                 saveErrorMessage={savePlayerNameError}
+                levelInfo={levelInfo}
                 onSavePlayerName={handleSavePlayerName}
                 onRestart={handleRestart}
                 onBackToMenu={handleBackToMenu}
@@ -599,7 +636,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                     </div>
                     <div className="text-lg text-foreground">
                         制限時間:{' '}
-                        <span className="font-semibold">{isSurvivalMode ? 'HPが0になるまで' : `${gameDurationMinutes}分`}</span>
+                        <span className="font-semibold">
+                            {isSurvivalMode ? 'HPが0になるまで' : `${gameDurationMinutes}分`}
+                        </span>
                     </div>
                     {isSurvivalMode && (
                         <div className="text-sm text-muted-foreground pt-2 space-y-1.5 border-t border-border/50">
@@ -611,7 +650,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                                 </div>
                                 <div className="text-left">
                                     <div className="text-muted-foreground">基本HP減少/秒</div>
-                                    <div className="font-semibold text-foreground">{SURVIVAL_SETTINGS.baseHpDrainPerSecond}</div>
+                                    <div className="font-semibold text-foreground">
+                                        {SURVIVAL_SETTINGS.baseHpDrainPerSecond}
+                                    </div>
                                 </div>
                                 <div className="text-left">
                                     <div className="text-muted-foreground">フェーズ間隔</div>
@@ -619,20 +660,28 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                                 </div>
                                 <div className="text-left">
                                     <div className="text-muted-foreground">フェーズによるHP減少速度</div>
-                                    <div className="font-semibold text-foreground">{SURVIVAL_SETTINGS.hpDrainGrowthPerPhase}/段</div>
+                                    <div className="font-semibold text-foreground">
+                                        {SURVIVAL_SETTINGS.hpDrainGrowthPerPhase}/段
+                                    </div>
                                 </div>
                                 <div className="text-left">
                                     <div className="text-muted-foreground">誤回答ペナルティ</div>
-                                    <div className="font-semibold text-foreground">-{SURVIVAL_SETTINGS.errorPenaltyHp}</div>
+                                    <div className="font-semibold text-foreground">
+                                        -{SURVIVAL_SETTINGS.errorPenaltyHp}
+                                    </div>
                                 </div>
                                 <div className="text-left">
                                     <div className="text-muted-foreground">タイムアップペナルティ</div>
-                                    <div className="font-semibold text-foreground">-{SURVIVAL_SETTINGS.timeoutPenaltyHp}</div>
+                                    <div className="font-semibold text-foreground">
+                                        -{SURVIVAL_SETTINGS.timeoutPenaltyHp}
+                                    </div>
                                 </div>
                                 <div className="text-left col-span-2">
                                     <div className="text-muted-foreground">問題クリア時HP回復</div>
                                     <div className="font-semibold text-foreground text-xs">
-                                        初級: +{SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.easy} / 中級: +{SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.medium} / 上級: +{SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.hard}
+                                        初級: +{SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.easy} / 中級: +
+                                        {SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.medium} / 上級: +
+                                        {SURVIVAL_SETTINGS.questionClearBonusHpByDifficulty.hard}
                                     </div>
                                 </div>
                             </div>
@@ -642,7 +691,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                     {startCountdownSecondsLeft !== null && (
                         <div className="mt-3 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2">
                             <div className="text-xs text-muted-foreground">ゲーム開始まで</div>
-                            <div className="text-3xl font-bold text-primary tabular-nums">{startCountdownSecondsLeft}</div>
+                            <div className="text-3xl font-bold text-primary tabular-nums">
+                                {startCountdownSecondsLeft}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -655,11 +706,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                     >
                         {startCountdownSecondsLeft !== null ? `開始まで ${startCountdownSecondsLeft}` : 'ゲーム開始'}
                     </ActionButton>
-                    <ActionButton
-                        onClick={handleBackToMenu}
-                        variant="ghost"
-                        icon={ChevronLeft}
-                    >
+                    <ActionButton onClick={handleBackToMenu} variant="ghost" icon={ChevronLeft}>
                         戻る
                     </ActionButton>
                 </ActionButtonRow>
@@ -684,7 +731,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                         </div>
                         {isSurvivalMode && (
                             <div className="text-xs md:text-sm text-muted-foreground">
-                                現在問題: {questionDifficultyLabelMap[currentQuestion.difficulty as QuestionDifficulty] ?? '中級'} / フェーズ: {currentPhase}
+                                現在問題:{' '}
+                                {questionDifficultyLabelMap[currentQuestion.difficulty as QuestionDifficulty] ?? '中級'}{' '}
+                                / フェーズ: {currentPhase}
                             </div>
                         )}
                     </div>
@@ -720,7 +769,10 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                                         </div>
                                     )}
                                 </div>
-                                <Progress value={(hp / SURVIVAL_SETTINGS.maxHp) * 100} className={hp <= 25 ? 'bg-red-500/15' : ''} />
+                                <Progress
+                                    value={(hp / SURVIVAL_SETTINGS.maxHp) * 100}
+                                    className={hp <= 25 ? 'bg-red-500/15' : ''}
+                                />
                             </div>
                             <ProgressBar timeLimit={questionTimeLimit} elapsedSeconds={questionElapsedSeconds} />
                         </div>
@@ -748,11 +800,7 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
 
             <div className="flex-shrink-0 p-2 md:p-3 border-t border-border/70 sticky bottom-0 bg-background/95 backdrop-blur-sm z-10">
                 <div className="max-w-3xl mx-auto">
-                    <div className={`grid ${isSurvivalMode ? 'grid-cols-5' : 'grid-cols-3'} gap-3 text-center`}>
-                        <div className="space-y-1">
-                            <div className="text-xs md:text-sm text-muted-foreground">正解数</div>
-                            <div className={`text-lg md:text-xl font-bold text-${accentColor}-500`}>{correctCount}</div>
-                        </div>
+                    <div className={`grid ${isSurvivalMode ? 'grid-cols-5' : 'grid-cols-4'} gap-3 text-center`}>
                         <div className="space-y-1">
                             <div className="text-xs md:text-sm text-muted-foreground">正タイプ数</div>
                             <div className="text-lg md:text-xl font-bold text-foreground">{totalInputCount}</div>
@@ -760,6 +808,15 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                         <div className="space-y-1">
                             <div className="text-xs md:text-sm text-muted-foreground">誤タイプ数</div>
                             <div className="text-lg md:text-xl font-bold text-red-500">{errorCount}</div>
+                        </div>
+                        <div className="space-y-1">
+                            <div className="text-xs md:text-sm text-muted-foreground">正解率</div>
+                            <div className={`text-lg md:text-xl font-bold text-${accentColor}-500`}>
+                                {totalInputCount + errorCount > 0
+                                    ? ((totalInputCount / (totalInputCount + errorCount)) * 100).toFixed(1)
+                                    : 0}
+                                %
+                            </div>
                         </div>
                         {isSurvivalMode && (
                             <>
@@ -769,7 +826,9 @@ export const SinglePlayScreen: React.FC<{ onBackToHome?: () => void; onBackToDif
                                 </div>
                                 <div className="space-y-1">
                                     <div className="text-xs md:text-sm text-muted-foreground">問題正解</div>
-                                    <div className="text-lg md:text-xl font-bold text-foreground">{completedQuestionCount}</div>
+                                    <div className="text-lg md:text-xl font-bold text-foreground">
+                                        {completedQuestionCount}
+                                    </div>
                                 </div>
                             </>
                         )}

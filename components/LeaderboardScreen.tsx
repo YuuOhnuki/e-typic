@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { BarChart3, ChevronLeft, Crown } from 'lucide-react';
+import { BarChart3, ChevronLeft } from 'lucide-react';
 import { ActionButton } from '@/components/ui/action-button';
 import { Difficulty, DifficultyLeaderboardEntry } from '@/types/typing';
+import { UserStatsTooltip } from '@/components/UserStatsTooltip';
 
 interface LeaderboardScreenProps {
     onBackToHome?: () => void;
@@ -22,7 +23,9 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
     const [isLoading, setIsLoading] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState('');
     const [modeFilter, setModeFilter] = React.useState<'all' | 'single' | 'multi'>('all');
-    const [sortBy, setSortBy] = React.useState<'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank'>('correctCount');
+    const [sortBy, setSortBy] = React.useState<'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank'>(
+        'correctCount',
+    );
     const [expandedKey, setExpandedKey] = React.useState<string | null>(null);
     const sortedEntries = React.useMemo(() => {
         const filtered = entries.filter((entry) => modeFilter === 'all' || entry.mode === modeFilter);
@@ -125,7 +128,13 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
                         <BarChart3 className="size-6 text-primary" />
                         <h2 className="text-xl md:text-2xl font-light">リーダーボード</h2>
                     </div>
-                    <ActionButton onClick={onBackToHome} variant="outline" icon={ChevronLeft} className="w-auto" size="sm">
+                    <ActionButton
+                        onClick={onBackToHome}
+                        variant="outline"
+                        icon={ChevronLeft}
+                        className="w-auto"
+                        size="sm"
+                    >
                         戻る
                     </ActionButton>
                 </div>
@@ -191,15 +200,18 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
                         <div className="text-xs text-muted-foreground">並び替え項目</div>
                         <select
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as 'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank')}
+                            onChange={(e) =>
+                                setSortBy(
+                                    e.target.value as 'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank',
+                                )
+                            }
                             className="surface-input w-full px-3 py-2"
                         >
-                                                        <option value="rank">サーバー順位</option>
+                            <option value="rank">サーバー順位</option>
                             <option value="correctCount">正解タイプ数</option>
                             <option value="correctRate">正解率</option>
                             <option value="kpm">KPM</option>
                             <option value="createdAt">日時</option>
-
                         </select>
                     </div>
                 </div>
@@ -213,62 +225,81 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
 
                 {!isLoading && !errorMessage && sortedEntries.length > 0 && (
                     <div className="space-y-2">
-                        {sortedEntries.map((entry, index) => (
-                            <button
-                                key={`${entry.rank}-${entry.playerName}-${entry.createdAt}`}
-                                type="button"
-                                onClick={() =>
-                                    setExpandedKey((prev) =>
-                                        prev === `${entry.rank}-${entry.playerName}-${entry.createdAt}`
-                                            ? null
-                                            : `${entry.rank}-${entry.playerName}-${entry.createdAt}`,
-                                    )
-                                }
-                                className="w-full rounded border border-border px-3 py-2 text-left"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className={`w-8 text-center font-semibold ${
-                                                index + 1 === 1
-                                                    ? 'text-yellow-600'
-                                                    : index + 1 === 2
-                                                      ? 'text-gray-400'
-                                                      : index + 1 === 3
-                                                        ? 'text-amber-600'
-                                                        : 'text-muted-foreground'
-                                            }`}
-                                        >
-                                            {index + 1}
-                                        </span>
-                                        {index + 1 <= 3 && <Crown className="size-4 text-yellow-500" />}
-                                        <span className="font-medium">{entry.playerName}</span>
-                                        <span
-                                            className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
-                                                entry.mode === 'multi'
-                                                    ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
-                                                    : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                                            }`}
-                                        >
-                                            {entry.mode === 'multi' ? 'マルチ' : 'シングル'}
-                                        </span>
+                        {sortedEntries.map((entry, index) => {
+                            // ボタン内容を作成
+                            const buttonContent = (
+                                <button
+                                    type="button"
+                                    className="w-full rounded border border-border px-3 py-2 text-left hover:bg-accent/50 transition-colors"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`w-8 text-center font-semibold ${
+                                                    index + 1 === 1
+                                                        ? 'text-yellow-600'
+                                                        : index + 1 === 2
+                                                          ? 'text-gray-400'
+                                                          : index + 1 === 3
+                                                            ? 'text-amber-600'
+                                                            : 'text-muted-foreground'
+                                                }`}
+                                            >
+                                                {index + 1}
+                                            </span>
+                                            <span className="text-2xl">{entry.avatar || '😊'}</span>
+                                            <span className="font-medium">{entry.playerName}</span>
+                                            {entry.lv && (
+                                                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300">
+                                                    Lv {entry.lv}
+                                                </span>
+                                            )}
+                                            <span
+                                                className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
+                                                    entry.mode === 'multi'
+                                                        ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
+                                                        : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                                                }`}
+                                            >
+                                                {entry.mode === 'multi' ? 'マルチ' : 'シングル'}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs md:text-sm text-muted-foreground text-right">
+                                            {getSelectedMetricLabel(entry)}
+                                        </div>
                                     </div>
-                                    <div className="text-xs md:text-sm text-muted-foreground text-right">
-                                        {getSelectedMetricLabel(entry)}
-                                    </div>
+                                </button>
+                            );
+
+                            // ログインユーザーの場合はツールチップでラップ
+                            if (entry.userId && !entry.userId.startsWith('anon-')) {
+                                return (
+                                    <UserStatsTooltip
+                                        key={`${entry.rank}-${entry.playerName}-${entry.createdAt}`}
+                                        userId={entry.userId}
+                                        playerName={entry.playerName}
+                                        avatar={entry.avatar}
+                                        userLevel={entry.lv}
+                                    >
+                                        {buttonContent}
+                                    </UserStatsTooltip>
+                                );
+                            }
+
+                            // アノニマスユーザーはそのまま表示
+                            return (
+                                <div
+                                    key={`${entry.rank}-${entry.playerName}-${entry.createdAt}`}
+                                    className="cursor-default"
+                                >
+                                    {buttonContent}
                                 </div>
-                                {expandedKey === `${entry.rank}-${entry.playerName}-${entry.createdAt}` && (
-                                    <div className="mt-2 border-t border-border/70 pt-2 text-xs md:text-sm text-muted-foreground text-right space-y-1">
-                                        <div>KPM {entry.kpm.toFixed(1)} / 正解率 {entry.correctRate.toFixed(1)}%</div>
-                                        <div>正解タイプ数 {entry.correctCount} / {entry.mode === 'multi' ? 'マルチ' : 'シングル'}</div>
-                                        <div>作成 {formatCreatedAt(entry.createdAt)} / サーバー順位 {entry.rank}</div>
-                                    </div>
-                                )}
-                                <div className="mt-1 text-[11px] text-muted-foreground/70 text-right">クリックで詳細表示</div>
-                            </button>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
+
+                {/* 古い UserStatsModal の使用箇所を削除 */}
             </div>
         </div>
     );

@@ -14,6 +14,11 @@ interface ResultCardProps {
     isSavingName?: boolean;
     isSavedName?: boolean;
     saveErrorMessage?: string;
+    levelInfo?: {
+        previousLevel: number;
+        currentLevel: number;
+        leveledUp: boolean;
+    } | null;
     onSavePlayerName?: (playerName: string) => void;
     onRestart?: () => void;
     onBackToMenu?: () => void;
@@ -26,6 +31,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({
     isSavingName = false,
     isSavedName = false,
     saveErrorMessage,
+    levelInfo = null,
     onSavePlayerName,
     onRestart,
     onBackToMenu,
@@ -81,7 +87,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                     <Card className="surface-card">
                         <CardHeader className="border-b border-border/70 pb-3">
                             <CardTitle className="text-2xl font-light">結果</CardTitle>
-                            <CardDescription>難易度: {difficultyLabelMap[result.difficulty] ?? result.difficulty}</CardDescription>
+                            <CardDescription>
+                                難易度: {difficultyLabelMap[result.difficulty] ?? result.difficulty}
+                            </CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-4 pt-4">
@@ -107,8 +115,22 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                 {saveErrorMessage && <div className="text-xs text-red-600">{saveErrorMessage}</div>}
                             </div>
 
+                            {/* レベルアップ通知 */}
+                            {levelInfo?.leveledUp && (
+                                <div className="rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 p-4 animate-pulse">
+                                    <div className="text-center space-y-2">
+                                        <div className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                                            ✨ レベルアップ！✨
+                                        </div>
+                                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-300">
+                                            Lv {levelInfo.previousLevel} → Lv {levelInfo.currentLevel}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* 主要統計情報 */}
-                            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+                            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                                 <div className="space-y-1">
                                     <div className="text-sm text-muted-foreground uppercase tracking-wide">KPM</div>
                                     <div className={`text-2xl md:text-3xl font-light text-${accentColor}-500`}>
@@ -118,15 +140,31 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                 </div>
 
                                 <div className="space-y-1">
-                                    <div className="text-sm text-muted-foreground uppercase tracking-wide">正解タイプ数</div>
-                                    <div className="text-2xl md:text-3xl font-light text-foreground">{result.totalInputCount}</div>
+                                    <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                                        正タイプ数
+                                    </div>
+                                    <div className="text-2xl md:text-3xl font-light text-foreground">
+                                        {result.totalInputCount}
+                                    </div>
                                     <div className="text-xs text-muted-foreground/80">文字</div>
                                 </div>
 
                                 <div className="space-y-1">
-                                    <div className="text-sm text-muted-foreground uppercase tracking-wide">誤タイプ数</div>
-                                    <div className="text-2xl md:text-3xl font-light text-red-500">{result.errorCount}</div>
+                                    <div className="text-sm text-muted-foreground uppercase tracking-wide">
+                                        誤タイプ数
+                                    </div>
+                                    <div className="text-2xl md:text-3xl font-light text-red-500">
+                                        {result.errorCount}
+                                    </div>
                                     <div className="text-xs text-muted-foreground/80">個</div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <div className="text-sm text-muted-foreground uppercase tracking-wide">正解率</div>
+                                    <div className="text-2xl md:text-3xl font-light text-green-500">
+                                        {formatNumber(result.correctRate, 1)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground/80">%</div>
                                 </div>
                             </div>
 
@@ -146,12 +184,12 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                         </span>
                                     </div>
                                     {result.difficulty === 'survival' && (
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-muted-foreground">継続時間</span>
-                                        <span className="font-mono text-base md:text-lg font-semibold text-foreground">
-                                            {formatDuration(result.totalTime)}
-                                        </span>
-                                    </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-muted-foreground">継続時間</span>
+                                            <span className="font-mono text-base md:text-lg font-semibold text-foreground">
+                                                {formatDuration(result.totalTime)}
+                                            </span>
+                                        </div>
                                     )}
                                     {typeof result.dbRank === 'number' && result.dbRank > 0 && (
                                         <div className="flex justify-between items-center">
@@ -161,14 +199,15 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                             </span>
                                         </div>
                                     )}
-                                    {typeof result.completedQuestionCount === 'number' && (
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-muted-foreground">問題正解数</span>
-                                            <span className="font-mono text-base md:text-lg font-semibold text-foreground">
-                                                {result.completedQuestionCount}
-                                            </span>
-                                        </div>
-                                    )}
+                                    {typeof result.completedQuestionCount === 'number' &&
+                                        result.difficulty === 'survival' && (
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-muted-foreground">問題正解数</span>
+                                                <span className="font-mono text-base md:text-lg font-semibold text-foreground">
+                                                    {result.completedQuestionCount}
+                                                </span>
+                                            </div>
+                                        )}
                                     {typeof result.maxCombo === 'number' && result.difficulty === 'survival' && (
                                         <div className="flex justify-between items-center">
                                             <span className="text-muted-foreground">最大コンボ</span>
@@ -190,7 +229,9 @@ export const ResultCard: React.FC<ResultCardProps> = ({
 
                             {displayedLeaderboard.length > 0 && (
                                 <div className="space-y-3 border-t border-border/70 pt-4">
-                                    <div className="text-sm text-muted-foreground">難易度別ランキング TOP {displayedLeaderboard.length}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        難易度別ランキング TOP {displayedLeaderboard.length}
+                                    </div>
                                     <div className="space-y-2 max-h-56 overflow-y-auto">
                                         {displayedLeaderboard.map((entry) => (
                                             <div
@@ -201,7 +242,8 @@ export const ResultCard: React.FC<ResultCardProps> = ({
                                                     {entry.rank}. {entry.playerName}
                                                 </div>
                                                 <div className="text-xs text-muted-foreground">
-                                                    正解タイプ数 {entry.correctCount} / KPM {formatNumber(entry.kpm, 1)} / 正解率 {formatNumber(entry.correctRate, 1)}%
+                                                    正解タイプ数 {entry.correctCount} / KPM {formatNumber(entry.kpm, 1)}{' '}
+                                                    / 正解率 {formatNumber(entry.correctRate, 1)}%
                                                 </div>
                                             </div>
                                         ))}

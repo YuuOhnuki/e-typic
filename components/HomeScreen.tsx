@@ -2,8 +2,21 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { BarChart3, ChevronLeft, Clock3, Crown, Flame, Keyboard, Users } from 'lucide-react';
+import {
+    BarChart3,
+    ChevronLeft,
+    Clock3,
+    Crown,
+    Flame,
+    Keyboard,
+    Users,
+    LogIn,
+    UserPlus,
+    Settings,
+    TrendingUp,
+} from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 import { ActionButton, ActionButtonRow } from '@/components/ui/action-button';
 import { Difficulty } from '@/types/typing';
@@ -12,6 +25,10 @@ interface HomeScreenProps {
     onSelectSinglePlay: (difficulty: Difficulty, minutes: number) => void;
     onSelectMultiPlay: () => void;
     onSelectLeaderboard: () => void;
+    onSelectSignIn?: () => void;
+    onSelectSignUp?: () => void;
+    onSelectSettings?: () => void;
+    onSelectStats?: () => void;
     appVersion: string;
     initialShowDifficultySelect?: boolean;
     onExitDifficultySelect?: () => void;
@@ -26,10 +43,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     onSelectSinglePlay,
     onSelectMultiPlay,
     onSelectLeaderboard,
+    onSelectSignIn,
+    onSelectSignUp,
+    onSelectSettings,
+    onSelectStats,
     appVersion,
     initialShowDifficultySelect = false,
     onExitDifficultySelect,
 }) => {
+    const { data: session } = useSession();
     const [showDifficultySelect, setShowDifficultySelect] = React.useState(initialShowDifficultySelect);
     const [selectedMinutes, setSelectedMinutes] = React.useState<number>(1);
     const [isServerOnline, setIsServerOnline] = React.useState<boolean | null>(null);
@@ -143,32 +165,49 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             {/* ボタングループ */}
             <div className="relative space-y-4 w-full max-w-sm">
                 {!showDifficultySelect ? (
-                    <ActionButtonRow>
-                        <ActionButton
-                            onClick={() => setShowDifficultySelect(true)}
-                            variant="default"
-                            icon={Keyboard}
-                            size="lg"
-                        >
-                            シングルプレイ
-                        </ActionButton>
-                        <ActionButton
-                            onClick={onSelectMultiPlay}
-                            variant="secondary"
-                            icon={Users}
-                            size="lg"
-                        >
-                            マルチプレイ
-                        </ActionButton>
-                        <ActionButton
-                            onClick={onSelectLeaderboard}
-                            variant="outline"
-                            icon={BarChart3}
-                            size="lg"
-                        >
-                            リーダーボード
-                        </ActionButton>
-                    </ActionButtonRow>
+                    <div className="space-y-4">
+                        <ActionButtonRow>
+                            <ActionButton
+                                onClick={() => setShowDifficultySelect(true)}
+                                variant="default"
+                                icon={Keyboard}
+                                size="lg"
+                            >
+                                シングルプレイ
+                            </ActionButton>
+                            <ActionButton onClick={onSelectMultiPlay} variant="secondary" icon={Users} size="lg">
+                                マルチプレイ
+                            </ActionButton>
+                            <ActionButton onClick={onSelectLeaderboard} variant="outline" icon={BarChart3} size="lg">
+                                リーダーボード
+                            </ActionButton>
+                        </ActionButtonRow>
+
+                        {/* 認証関連ボタン */}
+                        <ActionButtonRow>
+                            {session?.user ? (
+                                <>
+                                    <ActionButton onClick={onSelectStats} variant="outline" icon={TrendingUp} size="lg">
+                                        マイスタッツ
+                                    </ActionButton>
+                                    <ActionButton
+                                        onClick={onSelectSettings}
+                                        variant="outline"
+                                        icon={Settings}
+                                        size="lg"
+                                    >
+                                        設定
+                                    </ActionButton>
+                                </>
+                            ) : (
+                                <>
+                                    <ActionButton onClick={onSelectSignIn} variant="outline" icon={LogIn} size="lg">
+                                        ログイン
+                                    </ActionButton>
+                                </>
+                            )}
+                        </ActionButtonRow>
+                    </div>
                 ) : (
                     <div className="space-y-2">
                         <div className="text-center text-sm tracking-wide text-muted-foreground">難易度を選択</div>
@@ -228,9 +267,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
             <div className="absolute bottom-6 right-6 text-right text-lg text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <span className="font-medium">マルチサーバー</span>
-                    <span className={`inline-block w-3 h-3 rounded-full ${
-                        isServerOnline === null ? 'bg-gray-400 animate-pulse' : isServerOnline ? 'bg-emerald-500' : 'bg-red-500'
-                    }`}></span>
+                    <span
+                        className={`inline-block w-3 h-3 rounded-full ${
+                            isServerOnline === null
+                                ? 'bg-gray-400 animate-pulse'
+                                : isServerOnline
+                                  ? 'bg-emerald-500'
+                                  : 'bg-red-500'
+                        }`}
+                    ></span>
                 </div>
                 <div className="mt-1">v{appVersion}</div>
             </div>

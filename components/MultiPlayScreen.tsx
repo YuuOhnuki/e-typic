@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { io, Socket } from 'socket.io-client';
 import {
     CheckCircle2,
@@ -123,11 +124,12 @@ const emitRoomAction = <TResponse extends RoomActionAck, TPayload>(
 };
 
 export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBackToHome }) => {
+    const { data: session } = useSession();
     const socketRef = useRef<Socket | null>(null);
     const [mode, setMode] = useState<Mode>('menu');
     const [menuView, setMenuView] = useState<MenuView>('create');
     const [joinView, setJoinView] = useState<JoinView>('public');
-    const [playerName, setPlayerName] = useState('Player');
+    const [playerName, setPlayerName] = useState(session?.user?.username || 'Player');
     const [roomCodeInput, setRoomCodeInput] = useState('');
     const [difficulty, setDifficulty] = useState<Difficulty>('easy');
     const [minutes, setMinutes] = useState(1);
@@ -209,8 +211,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
             setTeamMode(payload.teamMode === 'two-teams' ? 'two-teams' : 'free');
             setScoreMode(
                 payload.scoreMode === 'correct-rate' ||
-                payload.scoreMode === 'completed-questions' ||
-                payload.scoreMode === 'kpm'
+                    payload.scoreMode === 'completed-questions' ||
+                    payload.scoreMode === 'kpm'
                     ? payload.scoreMode
                     : 'correct-count',
             );
@@ -427,21 +429,30 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
     const startRace = useCallback(() => {
         if (!roomState) return;
-        emitRoomAction(ensureSocket, setErrorMessage, 'room:start', { roomCode: roomState.roomCode }, '開始に失敗しました。');
+        emitRoomAction(
+            ensureSocket,
+            setErrorMessage,
+            'room:start',
+            { roomCode: roomState.roomCode },
+            '開始に失敗しました。',
+        );
     }, [ensureSocket, roomState]);
 
     const updateLobbySettings = useCallback(() => {
         if (!roomState) return;
-        emitRoomAction<UpdateSettingsAck, {
-            roomCode: string;
-            difficulty: Difficulty;
-            minutes: number;
-            maxPlayers: number;
-            isPublic: boolean;
-            autoStart: boolean;
-            teamMode: TeamMode;
-            scoreMode: ScoreMode;
-        }>(
+        emitRoomAction<
+            UpdateSettingsAck,
+            {
+                roomCode: string;
+                difficulty: Difficulty;
+                minutes: number;
+                maxPlayers: number;
+                isPublic: boolean;
+                autoStart: boolean;
+                teamMode: TeamMode;
+                scoreMode: ScoreMode;
+            }
+        >(
             ensureSocket,
             setErrorMessage,
             'room:update-settings',
@@ -663,7 +674,19 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 completedQuestionCount: nextCompletedQuestionCount,
             },
         });
-    }, [completedQuestionCount, correctCount, difficulty, ensureSocket, errorCount, getRandomQuestion, mode, roomState?.difficulty, roomState?.roomCode, totalCharProgress, totalInputCount]);
+    }, [
+        completedQuestionCount,
+        correctCount,
+        difficulty,
+        ensureSocket,
+        errorCount,
+        getRandomQuestion,
+        mode,
+        roomState?.difficulty,
+        roomState?.roomCode,
+        totalCharProgress,
+        totalInputCount,
+    ]);
 
     const ranking = useMemo(() => {
         if (!roomState) return [];
@@ -784,16 +807,24 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
                     {menuView === 'create' && (
                         <div className="space-y-3">
-                            <div className="space-y-2">
-                                <div className="text-sm text-muted-foreground">プレイヤー名</div>
-                                <input
-                                    value={playerName}
-                                    onChange={(e) => setPlayerName(e.target.value)}
-                                    className="surface-input w-full px-3 py-2"
-                                    placeholder="名前を入力"
-                                    maxLength={16}
-                                />
-                            </div>
+                            {!session?.user && (
+                                <div className="space-y-2 relative">
+                                    <div className="text-sm text-muted-foreground">プレイヤー名</div>
+                                    <input
+                                        value={playerName}
+                                        onChange={(e) => setPlayerName(e.target.value)}
+                                        className="surface-input w-full px-3 py-2 box-border"
+                                        placeholder="名前を入力"
+                                        maxLength={16}
+                                    />
+                                </div>
+                            )}
+                            {session?.user && (
+                                <div className="text-sm text-muted-foreground/60">
+                                    プレイヤー名:{' '}
+                                    <span className="font-semibold text-foreground">{session.user.username}</span>
+                                </div>
+                            )}
 
                             <div className="surface-muted p-3.5 space-y-3">
                                 <div className="text-sm text-muted-foreground">ルーム作成設定</div>
@@ -838,17 +869,25 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     )}
 
                     {menuView === 'join' && (
-                        <div className="space-y-3 max-h-[70dvh] overflow-y-auto pr-1">
-                            <div className="space-y-2">
-                                <div className="text-sm text-muted-foreground">プレイヤー名</div>
-                                <input
-                                    value={playerName}
-                                    onChange={(e) => setPlayerName(e.target.value)}
-                                    className="surface-input w-full px-3 py-2"
-                                    placeholder="名前を入力"
-                                    maxLength={16}
-                                />
-                            </div>
+                        <div className="space-y-3 max-h-[70dvh] overflow-y-auto overflow-x-hidden pr-1">
+                            {!session?.user && (
+                                <div className="space-y-2 relative">
+                                    <div className="text-sm text-muted-foreground">プレイヤー名</div>
+                                    <input
+                                        value={playerName}
+                                        onChange={(e) => setPlayerName(e.target.value)}
+                                        className="surface-input w-full px-3 py-2 box-border"
+                                        placeholder="名前を入力"
+                                        maxLength={16}
+                                    />
+                                </div>
+                            )}
+                            {session?.user && (
+                                <div className="text-sm text-muted-foreground/60">
+                                    プレイヤー名:{' '}
+                                    <span className="font-semibold text-foreground">{session.user.username}</span>
+                                </div>
+                            )}
 
                             <div className="surface-muted p-1 grid grid-cols-2 gap-1">
                                 <Button
@@ -920,13 +959,17 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                             onClick={fetchPublicRooms}
                                             disabled={isLoadingPublicRooms}
                                         >
-                                            <RefreshCw className={`size-4 ${isLoadingPublicRooms ? 'animate-spin' : ''}`} />
+                                            <RefreshCw
+                                                className={`size-4 ${isLoadingPublicRooms ? 'animate-spin' : ''}`}
+                                            />
                                             更新
                                         </Button>
                                     </div>
                                     <div className="max-h-60 overflow-y-auto space-y-2">
                                         {publicRooms.length === 0 ? (
-                                            <div className="text-xs text-muted-foreground">公開ルームはありません。</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                公開ルームはありません。
+                                            </div>
                                         ) : (
                                             publicRooms.map((room) => (
                                                 <button
@@ -944,7 +987,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                                 >
                                                     <div className="font-medium">{room.roomName}</div>
                                                     <div className="text-xs text-muted-foreground">
-                                                        {room.hostName} / {room.difficulty} / {room.minutes}分 / {room.currentPlayers}人
+                                                        {room.hostName} / {room.difficulty} / {room.minutes}分 /{' '}
+                                                        {room.currentPlayers}人
                                                     </div>
                                                 </button>
                                             ))
@@ -996,7 +1040,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                         <div className="text-right text-sm text-muted-foreground">
                             <div>
                                 ルームコード:
-                                <span className="ml-2 font-semibold text-lg md:text-xl tracking-widest">{currentRoomCode}</span>
+                                <span className="ml-2 font-semibold text-lg md:text-xl tracking-widest">
+                                    {currentRoomCode}
+                                </span>
                             </div>
                             <div className="mt-1 inline-flex items-center gap-1">
                                 {roomState?.isPublic ? <Globe2 className="size-4" /> : <Lock className="size-4" />}
@@ -1012,19 +1058,29 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                     </div>
 
                     <div className="surface-muted p-3 space-y-2">
-                        <div className="text-xs text-muted-foreground">ユーザー名（ルーム参加中でも変更可能）</div>
-                        <div className="flex gap-2">
-                            <input
-                                value={playerName}
-                                onChange={(event) => setPlayerName(event.target.value)}
-                                className="surface-input w-full px-3 py-2"
-                                placeholder="名前を入力"
-                                maxLength={16}
-                            />
-                            <Button type="button" variant="outline" onClick={updatePlayerNameInRoom}>
-                                反映
-                            </Button>
+                        <div className="text-xs text-muted-foreground">
+                            ユーザー名{!session?.user && '（ルーム参加中でも変更可能）'}
                         </div>
+                        {!session?.user && (
+                            <div className="flex gap-2">
+                                <input
+                                    value={playerName}
+                                    onChange={(event) => setPlayerName(event.target.value)}
+                                    className="surface-input w-full px-3 py-2"
+                                    placeholder="名前を入力"
+                                    maxLength={16}
+                                />
+                                <Button type="button" variant="outline" onClick={updatePlayerNameInRoom}>
+                                    反映
+                                </Button>
+                            </div>
+                        )}
+                        {session?.user && (
+                            <div className="text-sm">
+                                <span className="text-muted-foreground">ログインユーザー: </span>
+                                <span className="font-semibold text-foreground">{session.user.username}</span>
+                            </div>
+                        )}
                     </div>
 
                     {countdownSecondsLeft !== null && (
@@ -1035,7 +1091,8 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
 
                     <div className="text-xs text-muted-foreground">
                         人数: {roomState?.players.length ?? 0}/{roomState?.maxPlayers ?? maxPlayers} | 自動スタート:{' '}
-                        {roomState?.autoStart ? 'ON' : 'OFF'} | チーム: {roomState?.teamMode === 'two-teams' ? '2チーム' : '個人戦'} | 対戦方式:{' '}
+                        {roomState?.autoStart ? 'ON' : 'OFF'} | チーム:{' '}
+                        {roomState?.teamMode === 'two-teams' ? '2チーム' : '個人戦'} | 対戦方式:{' '}
                         {scoreModeLabels[scoreMode]}
                     </div>
                     {roomState?.teamMode === 'two-teams' && (
@@ -1069,7 +1126,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                         {player.playerId === roomState?.hostPlayerId && (
                                             <Crown className="mr-2 w-4 h-4 text-yellow-500" />
                                         )}
-                                        <span className={`truncate font-medium ${getTeamNameClass(teamMode, player.teamId)}`}>
+                                        <span
+                                            className={`truncate font-medium ${getTeamNameClass(teamMode, player.teamId)}`}
+                                        >
                                             {player.name}
                                         </span>
                                         {roomState?.teamMode === 'two-teams' && (
@@ -1095,28 +1154,30 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                                   : '未準備'}
                                         </div>
 
-                                        {isHost && player.playerId !== playerId && roomState?.teamMode === 'two-teams' && (
-                                            <div className="inline-flex items-center rounded-md border border-border p-0.5">
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant={player.teamId === 'A' ? 'secondary' : 'ghost'}
-                                                    className="h-7 px-2"
-                                                    onClick={() => setPlayerTeam(player.playerId, 'A')}
-                                                >
-                                                    A
-                                                </Button>
-                                                <Button
-                                                    type="button"
-                                                    size="sm"
-                                                    variant={player.teamId === 'B' ? 'secondary' : 'ghost'}
-                                                    className="h-7 px-2"
-                                                    onClick={() => setPlayerTeam(player.playerId, 'B')}
-                                                >
-                                                    B
-                                                </Button>
-                                            </div>
-                                        )}
+                                        {isHost &&
+                                            player.playerId !== playerId &&
+                                            roomState?.teamMode === 'two-teams' && (
+                                                <div className="inline-flex items-center rounded-md border border-border p-0.5">
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant={player.teamId === 'A' ? 'secondary' : 'ghost'}
+                                                        className="h-7 px-2"
+                                                        onClick={() => setPlayerTeam(player.playerId, 'A')}
+                                                    >
+                                                        A
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        variant={player.teamId === 'B' ? 'secondary' : 'ghost'}
+                                                        className="h-7 px-2"
+                                                        onClick={() => setPlayerTeam(player.playerId, 'B')}
+                                                    >
+                                                        B
+                                                    </Button>
+                                                </div>
+                                            )}
 
                                         {isHost && player.playerId !== playerId && (
                                             <Button
@@ -1306,12 +1367,11 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                 </div>
 
                 {isChatOpen ? (
-                    <div
-                        className="absolute inset-0 z-20"
-                        onClick={() => setIsChatOpen(false)}
-                        aria-hidden="true"
-                    >
-                        <div className="absolute left-3 bottom-3 w-[min(68vw,15rem)] md:left-4 md:bottom-4 md:w-[16rem] lg:w-[17rem]" onClick={(event) => event.stopPropagation()}>
+                    <div className="absolute inset-0 z-20" onClick={() => setIsChatOpen(false)} aria-hidden="true">
+                        <div
+                            className="absolute left-3 bottom-3 w-[min(68vw,15rem)] md:left-4 md:bottom-4 md:w-[16rem] lg:w-[17rem]"
+                            onClick={(event) => event.stopPropagation()}
+                        >
                             <div className="surface-card overflow-hidden shadow-lg">
                                 <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
                                     <div className="text-sm font-medium">ロビーのチャット</div>
@@ -1329,13 +1389,20 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                         </Button>
                                     </div>
                                 </div>
-                                <div ref={chatScrollRef} className="max-h-44 space-y-1 overflow-y-auto px-3 py-2 scrollbar-hide">
+                                <div
+                                    ref={chatScrollRef}
+                                    className="max-h-44 space-y-1 overflow-y-auto px-3 py-2 scrollbar-hide"
+                                >
                                     {chatMessages.length === 0 ? (
-                                        <div className="text-xs text-muted-foreground">まだメッセージはありません。</div>
+                                        <div className="text-xs text-muted-foreground">
+                                            まだメッセージはありません。
+                                        </div>
                                     ) : (
                                         chatMessages.map((message) => (
                                             <div key={message.id} className="text-sm leading-relaxed break-words">
-                                                <span className="font-semibold text-foreground">{message.playerName}</span>
+                                                <span className="font-semibold text-foreground">
+                                                    {message.playerName}
+                                                </span>
                                                 <span className="text-muted-foreground">: {message.content}</span>
                                             </div>
                                         ))
@@ -1364,7 +1431,11 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                             className={`h-9 shrink-0 px-0 ${isChatInputFocused ? 'w-16' : 'w-9'}`}
                                             aria-label="メッセージを送信"
                                         >
-                                            {isChatInputFocused ? <span className="text-xs font-medium">送信</span> : <Send className="size-4" />}
+                                            {isChatInputFocused ? (
+                                                <span className="text-xs font-medium">送信</span>
+                                            ) : (
+                                                <Send className="size-4" />
+                                            )}
                                         </Button>
                                     </form>
                                 </div>
@@ -1405,7 +1476,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             <h2 className="text-2xl md:text-3xl font-light">マルチプレイレース</h2>
                             <div className="text-sm text-muted-foreground">
                                 ルームコード:
-                                <span className="ml-2 font-semibold text-lg md:text-xl tracking-widest">{currentRoomCode}</span>
+                                <span className="ml-2 font-semibold text-lg md:text-xl tracking-widest">
+                                    {currentRoomCode}
+                                </span>
                             </div>
                         </div>
                         <div className="flex w-full flex-col gap-2 md:w-auto md:items-end">
@@ -1468,7 +1541,9 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                                                 >
                                                     {idx + 1}.
                                                 </span>
-                                                <span className={getTeamNameClass(teamMode, player.teamId)}>{player.name}</span>
+                                                <span className={getTeamNameClass(teamMode, player.teamId)}>
+                                                    {player.name}
+                                                </span>
                                                 {roomState?.teamMode === 'two-teams' && (
                                                     <span
                                                         className={`ml-2 text-[10px] rounded px-1.5 py-0.5 ${getTeamBadgeClass(teamMode, player.teamId)}`}
@@ -1508,7 +1583,7 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
     }
 
     return (
-            <div className="h-dvh flex items-center justify-center px-4 py-3 overflow-hidden animate-fade-up-soft">
+        <div className="h-dvh flex items-center justify-center px-4 py-3 overflow-hidden animate-fade-up-soft">
             <div className="surface-card w-full max-w-xl p-5 space-y-3.5 max-h-[95dvh] overflow-y-auto">
                 <h2 className="text-xl md:text-2xl font-light">レース結果</h2>
                 <div className="space-y-2">
@@ -1564,7 +1639,10 @@ export const MultiPlayScreen: React.FC<{ onBackToHome?: () => void }> = ({ onBac
                             <div>正解率: {myResult.correctRate.toFixed(1)}%</div>
                             <div>KPM: {myResult.kpm.toFixed(1)}</div>
                             <div>
-                                難易度別順位: {typeof myResult.dbRank === 'number' && myResult.dbRank > 0 ? `${myResult.dbRank}位` : '計算中'}
+                                難易度別順位:{' '}
+                                {typeof myResult.dbRank === 'number' && myResult.dbRank > 0
+                                    ? `${myResult.dbRank}位`
+                                    : '計算中'}
                             </div>
                         </div>
                     </div>
