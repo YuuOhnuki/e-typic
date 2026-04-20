@@ -1,9 +1,11 @@
 'use client';
 
 import React from 'react';
-import { BarChart3, ChevronLeft, Crown } from 'lucide-react';
+import { BarChart3, ChevronLeft } from 'lucide-react';
 import { ActionButton } from '@/components/ui/action-button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Difficulty, DifficultyLeaderboardEntry } from '@/types/typing';
+import { UserStatsModal } from '@/components/UserStatsModal';
 
 interface LeaderboardScreenProps {
     onBackToHome?: () => void;
@@ -22,8 +24,15 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
     const [isLoading, setIsLoading] = React.useState(false);
     const [errorMessage, setErrorMessage] = React.useState('');
     const [modeFilter, setModeFilter] = React.useState<'all' | 'single' | 'multi'>('all');
-    const [sortBy, setSortBy] = React.useState<'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank'>('correctCount');
-    const [expandedKey, setExpandedKey] = React.useState<string | null>(null);
+    const [sortBy, setSortBy] = React.useState<'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank'>(
+        'correctCount',
+    );
+    const [selectedUserInfo, setSelectedUserInfo] = React.useState<{
+        userId: string;
+        playerName: string;
+        avatar?: string;
+        userLevel?: number;
+    } | null>(null);
     const sortedEntries = React.useMemo(() => {
         const filtered = entries.filter((entry) => modeFilter === 'all' || entry.mode === modeFilter);
         return [...filtered].sort((a, b) => {
@@ -96,7 +105,6 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
                 if (!cancelled) {
                     const next = Array.isArray(payload.leaderboard) ? payload.leaderboard : [];
                     setEntries(next.sort((a, b) => a.rank - b.rank));
-                    setExpandedKey(null);
                 }
             } catch (error) {
                 if (!cancelled) {
@@ -125,7 +133,13 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
                         <BarChart3 className="size-6 text-primary" />
                         <h2 className="text-xl md:text-2xl font-light">リーダーボード</h2>
                     </div>
-                    <ActionButton onClick={onBackToHome} variant="outline" icon={ChevronLeft} className="w-auto" size="sm">
+                    <ActionButton
+                        onClick={onBackToHome}
+                        variant="outline"
+                        icon={ChevronLeft}
+                        className="w-auto"
+                        size="sm"
+                    >
                         戻る
                     </ActionButton>
                 </div>
@@ -189,18 +203,23 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
 
                     <div className="space-y-1">
                         <div className="text-xs text-muted-foreground">並び替え項目</div>
-                        <select
+                        <Select
                             value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as 'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank')}
-                            className="surface-input w-full px-3 py-2"
+                            onValueChange={(value) =>
+                                setSortBy(value as 'correctCount' | 'kpm' | 'correctRate' | 'createdAt' | 'rank')
+                            }
                         >
-                                                        <option value="rank">サーバー順位</option>
-                            <option value="correctCount">正解タイプ数</option>
-                            <option value="correctRate">正解率</option>
-                            <option value="kpm">KPM</option>
-                            <option value="createdAt">日時</option>
-
-                        </select>
+                            <SelectTrigger className="w-full">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="rank">サーバー順位</SelectItem>
+                                <SelectItem value="correctCount">正解タイプ数</SelectItem>
+                                <SelectItem value="correctRate">正解率</SelectItem>
+                                <SelectItem value="kpm">KPM</SelectItem>
+                                <SelectItem value="createdAt">日時</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 </div>
 
@@ -213,61 +232,85 @@ export const LeaderboardScreen: React.FC<LeaderboardScreenProps> = ({ onBackToHo
 
                 {!isLoading && !errorMessage && sortedEntries.length > 0 && (
                     <div className="space-y-2">
-                        {sortedEntries.map((entry, index) => (
-                            <button
-                                key={`${entry.rank}-${entry.playerName}-${entry.createdAt}`}
-                                type="button"
-                                onClick={() =>
-                                    setExpandedKey((prev) =>
-                                        prev === `${entry.rank}-${entry.playerName}-${entry.createdAt}`
-                                            ? null
-                                            : `${entry.rank}-${entry.playerName}-${entry.createdAt}`,
-                                    )
-                                }
-                                className="w-full rounded border border-border px-3 py-2 text-left"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className={`w-8 text-center font-semibold ${
-                                                index + 1 === 1
-                                                    ? 'text-yellow-600'
-                                                    : index + 1 === 2
-                                                      ? 'text-gray-400'
-                                                      : index + 1 === 3
-                                                        ? 'text-amber-600'
-                                                        : 'text-muted-foreground'
-                                            }`}
-                                        >
-                                            {index + 1}
-                                        </span>
-                                        {index + 1 <= 3 && <Crown className="size-4 text-yellow-500" />}
-                                        <span className="font-medium">{entry.playerName}</span>
-                                        <span
-                                            className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
-                                                entry.mode === 'multi'
-                                                    ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
-                                                    : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                                            }`}
-                                        >
-                                            {entry.mode === 'multi' ? 'マルチ' : 'シングル'}
-                                        </span>
-                                    </div>
-                                    <div className="text-xs md:text-sm text-muted-foreground text-right">
-                                        {getSelectedMetricLabel(entry)}
+                        {sortedEntries.map((entry, index) => {
+                            // ログインユーザーの場合はプレイヤー名をクリック可能にする
+                            const playerNameElement =
+                                entry.userId && !entry.userId.startsWith('anon-') ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedUserInfo({
+                                                userId: entry.userId || '',
+                                                playerName: entry.playerName,
+                                                avatar: entry.avatar,
+                                                userLevel: entry.lv,
+                                            });
+                                        }}
+                                        className="font-medium cursor-pointer hover:text-primary hover:underline transition-colors"
+                                    >
+                                        {entry.playerName}
+                                    </button>
+                                ) : (
+                                    <span className="font-medium">{entry.playerName}</span>
+                                );
+
+                            return (
+                                <div
+                                    key={`${entry.rank}-${entry.playerName}-${entry.createdAt}`}
+                                    className="w-full rounded border border-border px-3 py-2 text-left hover:bg-accent/50 transition-colors"
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={`w-8 text-center font-semibold ${
+                                                    index + 1 === 1
+                                                        ? 'text-yellow-600'
+                                                        : index + 1 === 2
+                                                          ? 'text-gray-400'
+                                                          : index + 1 === 3
+                                                            ? 'text-amber-600'
+                                                            : 'text-muted-foreground'
+                                                }`}
+                                            >
+                                                {index + 1}
+                                            </span>
+                                            <span className="text-2xl">{entry.avatar || '😊'}</span>
+                                            {playerNameElement}
+                                            {entry.lv && (
+                                                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-purple-500/15 text-purple-700 dark:text-purple-300">
+                                                    Lv {entry.lv}
+                                                </span>
+                                            )}
+                                            <span
+                                                className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
+                                                    entry.mode === 'multi'
+                                                        ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300'
+                                                        : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                                                }`}
+                                            >
+                                                {entry.mode === 'multi' ? 'マルチ' : 'シングル'}
+                                            </span>
+                                        </div>
+                                        <div className="text-xs md:text-sm text-muted-foreground text-right">
+                                            {getSelectedMetricLabel(entry)}
+                                        </div>
                                     </div>
                                 </div>
-                                {expandedKey === `${entry.rank}-${entry.playerName}-${entry.createdAt}` && (
-                                    <div className="mt-2 border-t border-border/70 pt-2 text-xs md:text-sm text-muted-foreground text-right space-y-1">
-                                        <div>KPM {entry.kpm.toFixed(1)} / 正解率 {entry.correctRate.toFixed(1)}%</div>
-                                        <div>正解タイプ数 {entry.correctCount} / {entry.mode === 'multi' ? 'マルチ' : 'シングル'}</div>
-                                        <div>作成 {formatCreatedAt(entry.createdAt)} / サーバー順位 {entry.rank}</div>
-                                    </div>
-                                )}
-                                <div className="mt-1 text-[11px] text-muted-foreground/70 text-right">クリックで詳細表示</div>
-                            </button>
-                        ))}
+                            );
+                        })}
                     </div>
+                )}
+
+                {/* ユーザー統計モーダル */}
+                {selectedUserInfo && (
+                    <UserStatsModal
+                        isOpen={!!selectedUserInfo}
+                        onClose={() => setSelectedUserInfo(null)}
+                        playerName={selectedUserInfo.playerName}
+                        avatar={selectedUserInfo.avatar}
+                        userLevel={selectedUserInfo.userLevel}
+                        userId={selectedUserInfo.userId}
+                    />
                 )}
             </div>
         </div>
