@@ -96,6 +96,9 @@ export interface GameResult {
 export interface DifficultyLeaderboardEntry {
     rank: number;
     playerName: string;
+    avatar?: string;
+    lv?: number;
+    userId?: string;
     kpm: number;
     totalInputCount: number;
     correctRate: number;

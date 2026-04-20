@@ -1,5 +1,17 @@
 export const CREATE_DB_SCHEMA_SQL = [
     `
+    CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL,
+        avatar TEXT,
+        lv INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+        updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    )
+    `,
+    `
     CREATE TABLE IF NOT EXISTS players (
         id TEXT PRIMARY KEY,
         display_name TEXT NOT NULL,

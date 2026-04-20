@@ -13,6 +13,9 @@ export interface SaveGameResultInput extends GameResult {
 export interface LeaderboardEntry {
     rank: number;
     playerName: string;
+    avatar?: string;
+    lv?: number;
+    userId?: string;
     kpm: number;
     totalInputCount: number;
     correctRate: number;
@@ -173,30 +176,37 @@ export const getDifficultyLeaderboard = async (
         sql: `
             WITH ranked AS (
                 SELECT
-                    player_name,
-                    kpm,
-                    total_input_count,
-                    correct_rate,
-                    correct_count,
-                    total_time_ms,
-                    mode,
-                    created_at,
+                    gr.player_id,
+                    gr.player_name,
+                    gr.kpm,
+                    gr.total_input_count,
+                    gr.correct_rate,
+                    gr.correct_count,
+                    gr.total_time_ms,
+                    gr.mode,
+                    gr.created_at,
+                    u.avatar,
+                    u.lv,
                     ROW_NUMBER() OVER (
                         ORDER BY
-                            correct_count DESC,
-                            total_input_count DESC,
-                            kpm DESC,
-                            correct_rate DESC,
-                            total_time_ms ASC,
-                            created_at ASC,
-                            id ASC
+                            gr.correct_count DESC,
+                            gr.total_input_count DESC,
+                            gr.kpm DESC,
+                            gr.correct_rate DESC,
+                            gr.total_time_ms ASC,
+                            gr.created_at ASC,
+                            gr.id ASC
                     ) AS rank
-                FROM game_results
-                WHERE difficulty = ?
+                FROM game_results gr
+                LEFT JOIN users u ON gr.player_id = u.id
+                WHERE gr.difficulty = ?
             )
             SELECT
                 rank,
+                player_id,
                 player_name,
+                avatar,
+                lv,
                 kpm,
                 total_input_count,
                 correct_rate,
@@ -214,6 +224,9 @@ export const getDifficultyLeaderboard = async (
     return rows.rows.map((row) => ({
         rank: Number(row.rank ?? 0),
         playerName: String(row.player_name ?? 'Player'),
+        avatar: String(row.avatar ?? ''),
+        lv: Number(row.lv ?? 1),
+        userId: String(row.player_id ?? ''),
         kpm: Number(row.kpm ?? 0),
         totalInputCount: Number(row.total_input_count ?? 0),
         correctRate: Number(row.correct_rate ?? 0),
